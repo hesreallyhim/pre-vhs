@@ -8,11 +8,11 @@ builtinsPack({
   registerMacros: (macros) => {
     // index.js already exports registerMacros, but for tests we can
     // just require index.js and call it directly in a real setup.
-    const { registerMacros } = require("../index.js");
+    const { registerMacros } = require("../src/index.js");
     registerMacros(macros);
   },
   helpers: {
-    formatType: require("../index.js").formatType,
+    formatType: require("../src/index.js").formatType,
   },
 });
 

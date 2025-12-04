@@ -267,11 +267,6 @@ function parseFileHeader(lines) {
   };
 }
 
-const { macrosFromHeader, bodyLines } = parseFileHeader(allLines);
-if (Object.keys(macrosFromHeader).length > 0) {
-  registerMacros(macrosFromHeader);
-}
-
 // ---------------------------------------------------------------------------
 // Core processing logic
 // ---------------------------------------------------------------------------
