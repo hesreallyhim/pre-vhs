@@ -52,6 +52,7 @@ module.exports = function builtinsPack(engine) {
   // Gap behavior implemented as a post-expand transform so it applies
   // between fully expanded commands (including those produced by macros).
   registerTransform("postExpand", (line, ctx) => {
+    if (!line || !String(line).trim()) return line;
     if (!currentGap) return line;
 
     const base = baseCommandName(line);

@@ -1,0 +1,8 @@
+Use Gap TypeEnter
+
+> Gap 200ms
+> TypeEnter $1
+hello
+
+> TypeEnter $1
+world

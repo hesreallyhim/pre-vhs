@@ -1,0 +1,7 @@
+# header aliases
+TypeAndEnter = Type $1, Enter
+SayTwice = TypeAndEnter $1, TypeAndEnter $1
+
+# body
+> SayTwice $1
+hello

@@ -1,0 +1,4 @@
+Type `echo hi`
+Sleep 1s
+Enter
+Type `done`

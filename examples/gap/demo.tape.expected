@@ -1,0 +1,8 @@
+Type `hello`
+Sleep 200ms
+Enter
+
+Sleep 200ms
+Type `world`
+Sleep 200ms
+Enter

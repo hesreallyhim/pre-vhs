@@ -1,0 +1,6 @@
+TypeSleep = Type $1, Sleep 1s
+Run = TypeSleep $1, Enter, Type $2
+
+> Run $1 $2
+echo hi
+done
