@@ -34,19 +34,20 @@ npm install -D pre-vhs
 2. Write a .tape.pre
 
 # header
-
+```text
 Use BackspaceAll Gap
-
 TypeEnter = Type $1, Enter
+```
 
 # body
-
+```text
 > Gap 200ms
 > Type $1, Enter
-> echo "hello"
+echo "hello"
 
 > TypeEnter $1
-> echo "bye"
+echo "bye"
+```
 
 3. Build the tape
 
@@ -64,19 +65,25 @@ Language Reference
 
 A directive line:
 
+```text
 > CmdA, CmdB arg, CmdC
+```
 
 expands to a sequence of VHS commands.
 
 If any command references $1, $2, … the next lines become its arguments:
 
+```text
 > Type $1, Enter
-> ls -la
+ls -la
+```
 
 produces:
 
+```text
 Type "ls -la"
 Enter
+```
 
 ---
 
@@ -84,9 +91,11 @@ Enter
 
 Each $n in a directive consumes one line beneath it:
 
+```text
 > Type $1, Enter, Type $2, Enter
-> echo "first"
-> echo "second"
+echo "first"
+echo "second"
+```
 
 ---
 
@@ -94,16 +103,20 @@ Each $n in a directive consumes one line beneath it:
 
 Aliases only appear at the top of the file before the first non-header line.
 
+```text
 TypeEnter = Type $1, Enter
 Clear = BackspaceAll $1, Type "", Enter
+```
 
 Usage:
 
+```text
 > TypeEnter $1
-> whoami
+whoami
 
 > Clear $1
-> garbage
+garbage
+```
 
 Aliases expand just like directives. They may reference built-ins or other aliases.
 
@@ -140,17 +153,21 @@ packs: [
 
 …you can write:
 
+```text
 > SetTypingStyle human
 > Type $1, Enter
-> echo "smoothly typed"
+echo "smoothly typed"
+```
 
 Human style breaks your text into chunks and emits randomized Type@xxms commands.
 
 Another example:
 
+```text
 > SetTypingStyle sloppy
 > Type $1
-> git commit -m "oops"
+git commit -m "oops"
+```
 
 Sloppy style injects occasional mistakes and corrections for realism.
 
@@ -166,19 +183,25 @@ Packs can hook into multiple phases:
 
 Example: Doubling every command (header phase):
 
+```text
 Use Doubler
+```
 
 Now:
 
+```text
 > Type $1, Enter
-> echo hi
+echo hi
+```
 
 becomes:
 
+```text
 Type "echo hi"
 Type "echo hi"
 Enter
 Enter
+```
 
 Typing styles use the same mechanism.
 
@@ -189,9 +212,11 @@ Typing styles use the same mechanism.
 Macros can expand into other macro calls; the engine recurses with guards
 (depth/step limits and cycle detection). This makes layered helpers like:
 
+```text
 TypeSleep = Type $1, Sleep 1s
 EnterEcho = Enter, Type $1
 RunAndEcho = TypeSleep $1, EnterEcho $2
+```
 
 work as expected without manual “with-gap” variants.
 
@@ -224,12 +249,14 @@ Use Gap BackspaceAll
 GitInit = Type "git init -q", Enter, Sleep 200ms
 GitStatus = Type "git status", Enter
 
+```text
 > GitInit
 
 > Type $1, Enter
-> git add .
+git add .
 
 > GitStatus
+```
 
 ---
 
@@ -237,9 +264,11 @@ Example: Complex one-liner
 
 Use BackspaceAll Gap
 
+```text
 > Type $1, Sleep 200ms, Type $2, Enter, Gap 400ms, Type "Done", Enter
-> echo
-> "hello"
+echo
+"hello"
+```
 
 ---
 
