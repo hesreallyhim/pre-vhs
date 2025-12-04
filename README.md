@@ -83,6 +83,11 @@ produces:
 ```text
 Type "ls -la"
 Enter
+
+Expansion model (quick reference):
+- `$n` substitution happens before macro lookup.
+- Inline args vs payload: if a header token has explicit text after the macro name, that text is treated as the payload; otherwise the payload comes from the consumed lines ($1 etc.).
+- Macro outputs are treated as final VHS unless they name another macro; recursion is allowed with guards (depth/step limits, cycle detection).
 ```
 
 ---
@@ -180,6 +185,7 @@ Packs can hook into multiple phases:
 - `preExpandToken`: per-token tweaks before macro lookup.
 - `postExpand`: operate on emitted VHS lines (e.g., Gap inserts Sleep between commands, screenshot-after-every-command).
 - `finalize`: last chance to rewrite the entire tape.
+Transform ordering: runs in registration order within a phase.
 
 Example: Doubling every command (header phase):
 

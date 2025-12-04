@@ -140,6 +140,8 @@ function parseFileHeader(lines) {
 function createEngine(options = {}) {
   // registry: name -> { fn, requireUse }
   const macroRegistry = new Map();
+  const warnOnMacroCollision =
+    options.warnOnMacroCollision === false ? false : true;
 
   // transforms per phase
   const transforms = {
@@ -159,6 +161,9 @@ function createEngine(options = {}) {
     const requireUse = macroOptions.requireUse !== false; // default true
     for (const [name, fn] of Object.entries(macros)) {
       if (typeof fn === "function") {
+        if (warnOnMacroCollision && macroRegistry.has(name)) {
+          console.warn(`[pre-vhs] Duplicate macro registration for '${name}', last definition wins`);
+        }
         macroRegistry.set(name, { fn, requireUse });
       }
     }
@@ -344,8 +349,9 @@ function createEngine(options = {}) {
 
     function expandTokenRecursive(token, payload, args, useSetLocal, ctx, stack = []) {
       if (state.expansionSteps >= MAX_EXPANSION_STEPS) {
+        const chain = stack.length ? ` (stack: ${stack.join(" -> ")})` : "";
         throw new Error(
-          `Macro expansion exceeded ${MAX_EXPANSION_STEPS} steps around line ${ctx.lineNo}`
+          `Macro expansion exceeded ${MAX_EXPANSION_STEPS} steps around line ${ctx.lineNo}${chain}`
         );
       }
       state.expansionSteps += 1;
@@ -375,8 +381,9 @@ function createEngine(options = {}) {
           );
         }
         if (stack.length >= MAX_EXPANSION_DEPTH) {
+          const chain = stack.length ? ` (stack: ${stack.join(" -> ")})` : "";
           throw new Error(
-            `Macro expansion depth exceeded ${MAX_EXPANSION_DEPTH} near line ${ctx.lineNo}`
+            `Macro expansion depth exceeded ${MAX_EXPANSION_DEPTH} near line ${ctx.lineNo}${chain}`
           );
         }
 
@@ -511,6 +518,7 @@ function initPacksFromConfig(config, engine) {
     let moduleId;
     let enabled = true;
     let options = {};
+    let autoUse = false;
 
     if (typeof spec === "string") {
       moduleId = spec;
@@ -518,6 +526,7 @@ function initPacksFromConfig(config, engine) {
       moduleId = spec.module;
       if (spec.enabled === false) enabled = false;
       if (spec.options) options = spec.options;
+      if (spec.autoUse) autoUse = true;
     }
 
     if (!enabled || !moduleId) continue;
@@ -529,8 +538,17 @@ function initPacksFromConfig(config, engine) {
     // eslint-disable-next-line global-require, import/no-dynamic-require
     const packFactory = require(resolved);
     if (typeof packFactory === "function") {
+      const registerMacros = autoUse
+        ? (macros, macroOptions = {}) =>
+            engine.registerMacros(macros, {
+              ...macroOptions,
+              requireUse: false,
+            })
+        : engine.registerMacros;
+
       packFactory({
         ...engineBase,
+        registerMacros,
         options,
       });
     }

@@ -27,11 +27,15 @@
  *   - The result is stored and used by subsequent IfProbe* macros.
  */
 
-const { spawnSync } = require("node:child_process");
+const { spawnSync: defaultSpawnSync } = require("node:child_process");
 
 module.exports = function probePack(engine) {
   const { registerMacros, helpers, options } = engine;
   const { formatType } = helpers;
+  const spawnFn =
+    options && typeof options.spawnSync === "function"
+      ? options.spawnSync
+      : defaultSpawnSync;
 
   const defaultTimeoutMs =
     (options && typeof options.defaultTimeoutMs === "number"
@@ -56,7 +60,7 @@ module.exports = function probePack(engine) {
     let error = null;
 
     try {
-      const result = spawnSync(command, {
+      const result = spawnFn(command, {
         shell: true,
         encoding: "utf8",
         timeout: defaultTimeoutMs,
