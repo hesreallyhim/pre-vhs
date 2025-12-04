@@ -1,0 +1,9 @@
+# header aliases
+TypeEnter = Type $1, Enter
+
+# body
+Output demo
+Set FontSize 14
+
+> TypeEnter $1
+echo "hello"
