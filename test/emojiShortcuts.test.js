@@ -11,6 +11,7 @@ describe("emojiShortcuts pack", () => {
     });
 
     const input = [
+      "Use EmojiSmile",
       "> EmojiSmile $1, Enter",
       "hello",
     ].join("\n");

@@ -45,15 +45,19 @@ describe("builtins pack", () => {
     const out = engine.processText(input).split("\n");
 
     // Expected pattern:
-    // Type "echo hi"
+    // Type `echo hi`
+    // Sleep 200ms
     // Enter
     // Sleep 200ms
-    // Type "echo hi"
+    // Type `echo hi`
+    // Sleep 200ms
     // Enter
-    expect(out[0]).toBe('Type "echo hi"');
-    expect(out[1]).toBe("Enter");
-    expect(out[2]).toBe("Sleep 200ms");
-    expect(out[3]).toBe('Type "echo hi"');
-    expect(out[4]).toBe("Enter");
+    expect(out[0]).toBe(formatType("echo hi"));
+    expect(out[1]).toBe("Sleep 200ms");
+    expect(out[2]).toBe("Enter");
+    expect(out[3]).toBe("Sleep 200ms");
+    expect(out[4]).toBe(formatType("echo hi"));
+    expect(out[5]).toBe("Sleep 200ms");
+    expect(out[6]).toBe("Enter");
   });
 });

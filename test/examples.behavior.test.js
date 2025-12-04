@@ -19,9 +19,8 @@ describe("examples-style behaviors", () => {
     const { processText } = createEngine();
     const input = [
       "TypeSleep = Type $1, Sleep 1s",
-      "EnterEcho = Enter, Type $1",
-      "RunAndEcho = TypeSleep $1, EnterEcho $2",
-      "> RunAndEcho $1, $2",
+      "RunAndEcho = TypeSleep $1, Enter, Type $2",
+      "> RunAndEcho $1 $2",
       "echo hi",
       "done",
     ].join("\n");

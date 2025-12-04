@@ -16,6 +16,7 @@ describe("typingStyles pack", () => {
     const randSpy = vi.spyOn(Math, "random").mockReturnValue(0.5);
 
     const input = [
+      "Use SetTypingStyle",
       "> SetTypingStyle human",
       "> Type $1",
       "hello world",
@@ -47,6 +48,7 @@ describe("typingStyles pack", () => {
     const randSpy = vi.spyOn(Math, "random").mockReturnValue(0.1);
 
     const input = [
+      "Use SetTypingStyle",
       "> SetTypingStyle sloppy",
       "> Type $1",
       "testing",

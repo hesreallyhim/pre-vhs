@@ -174,8 +174,22 @@ function createEngine(options = {}) {
   // Always-on core macro: Type
   registerMacros(
     {
-      Type(payload /* string */) {
-        return [formatType(payload || "")];
+      Type(_payload, rawCmd) {
+        const remainder = rawCmd.replace(/^Type\b/, "").trim();
+
+        // If already backtick-wrapped, treat as final VHS.
+        if (/^`.*`$/.test(remainder)) {
+          return [rawCmd.trim()];
+        }
+
+        // Strip simple matching quotes to avoid double-quoting.
+        const stripped =
+          (/^".*"$/.test(remainder) || /^'.*'$/.test(remainder))
+            ? remainder.slice(1, -1)
+            : remainder;
+
+        const text = stripped || _payload || "";
+        return [formatType(text)];
       },
     },
     { requireUse: false }
@@ -244,6 +258,13 @@ function createEngine(options = {}) {
   // -------------------------------------------------------------------------
   // Expansion logic
   // -------------------------------------------------------------------------
+
+  function substituteArgs(str, args) {
+    return String(str).replace(/\$(\d+)/g, (_m, n) => {
+      const idx = Number(n);
+      return args[idx] != null ? args[idx] : "";
+    });
+  }
 
   function processText(input) {
     const allLines = String(input).split(/\r?\n/);
@@ -330,7 +351,9 @@ function createEngine(options = {}) {
       state.expansionSteps += 1;
 
       const results = [];
-      const preTokens = applyPreExpandTransforms(token, ctx);
+      const hadPlaceholders = /\$(\d+)/.test(token);
+      const withArgs = substituteArgs(token, args);
+      const preTokens = applyPreExpandTransforms(withArgs, ctx);
 
       for (const tok of preTokens) {
         const trimmed = tok.trim();
@@ -357,7 +380,14 @@ function createEngine(options = {}) {
           );
         }
 
-        const res = entry.fn(payload, trimmed, args, ctx);
+        const remainderText = trimmed.replace(/^\S+\s*/, "").trim();
+        const payloadForCall = hadPlaceholders ? payload : (remainderText || payload || "");
+        const effectiveArgs = Array.isArray(args) ? [...args] : [];
+        if (remainderText && !hadPlaceholders) {
+          effectiveArgs[1] = remainderText;
+        }
+
+        const res = entry.fn(payloadForCall, trimmed, effectiveArgs, ctx);
         const arr = Array.isArray(res) ? res : [];
 
         for (const child of arr) {
@@ -371,8 +401,8 @@ function createEngine(options = {}) {
           results.push(
             ...expandTokenRecursive(
               child,
-              payload,
-              args,
+              payloadForCall,
+              effectiveArgs,
               useSetLocal,
               ctx,
               [...stack, base]
