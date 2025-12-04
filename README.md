@@ -1,1 +1,263 @@
 # pre-vhs
+
+A lightweight macro engine and DSL for writing VHS tapes faster, cleaner, and safer.
+
+pre-vhs transforms a compact, expressive .tape.pre file into a valid VHS .tape.
+It gives you a tiny language for automating common VHS patterns while staying 100% compatible with standard VHS syntax.
+
+---
+
+Why?
+
+VHS tapes are powerful but verbose.
+Typing commands, fixing mistakes, waiting between steps—these become repetitive fast.
+
+pre-vhs makes .tape authoring dramatically easier by adding:
+
+- Macros (built-in or user-defined)
+- Header aliases for reusable patterns
+- Positional arguments ($1, $2, …)
+- Header transforms (typing styles, doublers, etc.)
+- Optional packs, opt-in via Use ...
+- Absolutely no runtime dependency—output is plain VHS.
+
+You still write VHS. You just write less of it.
+
+---
+
+Basic Usage
+
+1. Install
+
+npm install -D pre-vhs
+
+2. Write a .tape.pre
+
+# header
+
+Use BackspaceAll Gap
+
+TypeEnter = Type $1, Enter
+
+# body
+
+> Gap 200ms
+> Type $1, Enter
+> echo "hello"
+
+> TypeEnter $1
+> echo "bye"
+
+3. Build the tape
+
+npx pre-vhs demo # reads demo.tape.pre → writes demo.tape
+
+Or use stdin→stdout:
+
+cat demo.tape.pre | npx pre-vhs > demo.tape
+
+---
+
+Language Reference
+
+1. Meta-directives (> lines)
+
+A directive line:
+
+> CmdA, CmdB arg, CmdC
+
+expands to a sequence of VHS commands.
+
+If any command references $1, $2, … the next lines become its arguments:
+
+> Type $1, Enter
+> ls -la
+
+produces:
+
+Type "ls -la"
+Enter
+
+---
+
+2. Positional Arguments ($1..$n)
+
+Each $n in a directive consumes one line beneath it:
+
+> Type $1, Enter, Type $2, Enter
+> echo "first"
+> echo "second"
+
+---
+
+3. Header Aliases
+
+Aliases only appear at the top of the file before the first non-header line.
+
+TypeEnter = Type $1, Enter
+Clear = BackspaceAll $1, Type "", Enter
+
+Usage:
+
+> TypeEnter $1
+> whoami
+
+> Clear $1
+> garbage
+
+Aliases expand just like directives. They may reference built-ins or other aliases.
+
+---
+
+4. Built-ins (opt-in via Use ...)
+
+The engine ships a small standard library, but nothing is active unless you import it.
+
+Examples:
+
+Macro Description
+BackspaceAll Deletes entire payload text
+BackspaceAllButOne Deletes payload except last char
+Gap Inserts a timed Sleep between commands
+TypeEnter (example alias pack) types payload + Enter
+ClearLine (example alias) remove text + newline
+
+To activate:
+
+Use BackspaceAll BackspaceAllButOne Gap
+
+---
+
+5. Typing Styles (optional pack)
+
+If you enable the typing-styles pack in pre-vhs.config.js:
+
+module.exports = {
+packs: [
+"./packs/typingStyles.js"
+]
+};
+
+…you can write:
+
+> SetTypingStyle human
+> Type $1, Enter
+> echo "smoothly typed"
+
+Human style breaks your text into chunks and emits randomized Type@xxms commands.
+
+Another example:
+
+> SetTypingStyle sloppy
+> Type $1
+> git commit -m "oops"
+
+Sloppy style injects occasional mistakes and corrections for realism.
+
+---
+
+6. Header Transforms (advanced)
+
+Packs can define transformations on directive headers before expansion.
+
+Example: Doubling every command:
+
+Use Doubler
+
+Now:
+
+> Type $1, Enter
+> echo hi
+
+becomes:
+
+Type "echo hi"
+Type "echo hi"
+Enter
+Enter
+
+Typing styles use the same mechanism.
+
+---
+
+7. Importing Packs (Project-wide)
+
+Optional packs may be enabled globally with a configuration file.
+
+pre-vhs.config.js:
+
+module.exports = {
+packs: [
+"./packs/typingStyles.js",
+"./packs/gitBasics.js",
+"./packs/emojiShortcuts.js"
+]
+};
+
+These behave like Vim plugins: they provide macros, but the user still chooses whether to activate them with Use ....
+
+---
+
+Examples
+
+Example: Git demo
+
+Use Gap BackspaceAll
+
+GitInit = Type "git init -q", Enter, Sleep 200ms
+GitStatus = Type "git status", Enter
+
+> GitInit
+
+> Type $1, Enter
+> git add .
+
+> GitStatus
+
+---
+
+Example: Complex one-liner
+
+Use BackspaceAll Gap
+
+> Type $1, Sleep 200ms, Type $2, Enter, Gap 400ms, Type "Done", Enter
+> echo
+> "hello"
+
+---
+
+CLI Options
+
+pre-vhs <basename> # reads <basename>.tape.pre, outputs <basename>.tape
+pre-vhs --config path
+cat file | pre-vhs # stdin → stdout mode
+
+---
+
+Testing
+
+The test suite consists of:
+
+- Golden file tests: .tape.pre → expected .tape
+- Unit tests: header parsing, alias resolution, built-ins, error reporting
+- Pack tests: typing styles, git, emoji shortcuts
+
+---
+
+Design Principles
+
+- Opt-in everything except Type
+- No magic: preprocessing is visible, predictable, diff-able
+- Tiny DSL: aliases and Use, not a programming language
+- Composable: chain packs, transforms, macros
+- Zero overhead: output is plain VHS
+
+---
+
+Roadmap
+
+- More built-in macro packs (filesystem, shortcuts, demos)
+- Optional fenced JS header sections if needed
+- Examples gallery / cookbook
+- VS Code syntax highlighting for .tape.pre
+- Playground website
