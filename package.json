@@ -1,0 +1,19 @@
+{
+  "name": "pre-vhs",
+  "version": "0.1.0",
+  "description": "An intuitive, highly configurable pre-processor for writing charmbracelet/vhs scripts with more complex command sequences in fewer words",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo 'no tests configured'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hesreallyhim/pre-vhs.git"
+  },
+  "author": "Really Him",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hesreallyhim/pre-vhs/issues"
+  },
+  "homepage": "https://github.com/hesreallyhim/pre-vhs#readme"
+}
