@@ -9,6 +9,9 @@
  *   - Registerable macros (META)
  *   - Registerable header transforms (for things like typing styles, doublers, etc.)
  *   - Small built-in meta-vocabulary: Type, BackspaceAll, BackspaceAllButOne, Gap
+ *   - File header aliases at the top of .tape.pre:
+ *       AliasName = Cmd1, Cmd2, Cmd3
+ *     until the first non-alias / non-comment / non-blank line.
  *
  * Packs are configured via pre-vhs.config.js/json and can register
  * additional macros and header transforms.
@@ -108,8 +111,6 @@ function applyHeaderTransforms(cmds, ctx) {
 // Built-in core macros (meta-vocabulary)
 // ---------------------------------------------------------------------------
 
-// DECISION: move built-in core macros to optional imports, except Type.
-
 let CURRENT_GAP = null;
 
 /**
@@ -119,53 +120,157 @@ META.Type = function Type(payload /* string */) {
   return [formatType(payload || "")];
 };
 
-// /**
-//  * BackspaceAll: delete as many characters as in the payload.
-//  */
-// META.BackspaceAll = function BackspaceAll(payload = "") {
-//   const n = String(payload).length;
-//   return [`Backspace ${n}`];
-// };
+/**
+ * BackspaceAll: delete as many characters as in the payload.
+ */
+META.BackspaceAll = function BackspaceAll(payload = "") {
+  const n = String(payload).length;
+  return [`Backspace ${n}`];
+};
 
-// /**
-//  * BackspaceAllButOne: delete all but the last character of the payload.
-//  */
-// META.BackspaceAllButOne = function BackspaceAllButOne(payload = "") {
-//   const len = String(payload).length;
-//   const n = Math.max(len - 1, 0);
-//   return [`Backspace ${n}`];
-// };
+/**
+ * BackspaceAllButOne: delete all but the last character of the payload.
+ */
+META.BackspaceAllButOne = function BackspaceAllButOne(payload = "") {
+  const len = String(payload).length;
+  const n = Math.max(len - 1, 0);
+  return [`Backspace ${n}`];
+};
 
-// /**
-//  * Gap: configure an inter-command Sleep that is automatically inserted
-//  * between subsequent commands (except Sleep/Gap itself).
-//  *
-//  * Example:
-//  *   > Gap 500ms
-//  *
-//  *   > Type $1, Enter
-//  *   hello
-//  *
-//  *   -> Type "hello"
-//  *      Sleep 500ms
-//  *      Enter
-//  *
-//  * Gap itself emits no VHS lines; it only updates CURRENT_GAP.
-//  */
-// META.Gap = function Gap(_payload, rawCmd) {
-//   const m = rawCmd.match(/Gap\s+(.+)/);
-//   CURRENT_GAP = m ? m[1].trim() : null;
-//   return [];
-// };
+/**
+ * Gap: configure an inter-command Sleep that is automatically inserted
+ * between subsequent commands (except Sleep/Gap itself).
+ *
+ * Example:
+ *   > Gap 500ms
+ *
+ *   > Type $1, Enter
+ *   hello
+ *
+ *   -> Type "hello"
+ *      Sleep 500ms
+ *      Enter
+ *
+ * Gap itself emits no VHS lines; it only updates CURRENT_GAP.
+ */
+META.Gap = function Gap(_payload, rawCmd) {
+  const m = rawCmd.match(/Gap\s+(.+)/);
+  CURRENT_GAP = m ? m[1].trim() : null;
+  return [];
+};
 
-// function shouldInsertGap(nextBase, lastBase) {
-//   if (!CURRENT_GAP) return false;
-//   if (!nextBase) return false;
-//   if (!lastBase) return false;
-//   if (nextBase === "Sleep" || nextBase === "Gap") return false;
-//   if (lastBase === "Gap") return false;
-//   return true;
-// }
+function shouldInsertGap(nextBase, lastBase) {
+  if (!CURRENT_GAP) return false;
+  if (!nextBase) return false;
+  if (!lastBase) return false;
+  if (nextBase === "Sleep" || nextBase === "Gap") return false;
+  if (lastBase === "Gap") return false;
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// File-header alias support
+// ---------------------------------------------------------------------------
+
+/**
+ * Given an alias name and its body command list, build a macro function
+ * that:
+ *   - substitutes $1, $2, ... using the call-site args
+ *   - returns a list of header tokens (which will themselves be expanded
+ *     by META / packs as usual).
+ *
+ * @param {string} name
+ * @param {string[]} bodyCmds
+ */
+function makeAliasMacro(name, bodyCmds) {
+  return function aliasMacro(_payload, _rawCmd, args) {
+    const out = [];
+    for (const bodyCmd of bodyCmds) {
+      const expanded = bodyCmd.replace(/\$(\d+)/g, (_, n) => args[Number(n)] ?? "");
+      out.push(expanded);
+    }
+    return out;
+  };
+}
+
+/**
+ * Parse a file header at the top of the .tape.pre:
+ *
+ * - Skips blank lines and comments (#..., //...).
+ * - Treats lines of the form:
+ *       Name = Cmd1, Cmd2, Cmd3
+ *   as alias definitions.
+ * - Stops at the first line that is not blank/comment/alias.
+ *
+ * Returns:
+ *   - macrosFromHeader: { Name: macroFn, ... }
+ *   - bodyLines: remaining lines (the actual tape body)
+ *
+ * @param {string[]} lines
+ */
+function parseFileHeader(lines) {
+  const macrosFromHeader = {};
+  let bodyStart = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Blank lines
+    if (/^\s*$/.test(line)) continue;
+
+    // Comments
+    if (/^\s*#/.test(line) || /^\s*\/\//.test(line)) continue;
+
+    // NEW: Use statements: Use BackspaceAll BackspaceAllButOne Gap
+    const useMatch = line.match(/^\s*Use\s+(.+)$/);
+    if (useMatch) {
+      const names = useMatch[1]
+        .split(/\s+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      for (const name of names) {
+        const macroFn = BUILTIN_MACROS[name];
+        if (typeof macroFn === "function") {
+          macrosFromHeader[name] = macroFn;
+        } else {
+          // Optional: warn or ignore silently
+          // console.warn(`[pre-vhs] Unknown builtin macro '${name}' on header line ${i+1}`);
+        }
+      }
+      continue;
+    }
+
+    // Alias lines: Name = Cmd1, Cmd2, ...
+    const m = line.match(/^\s*([A-Za-z_]\w*)\s*=\s*(.+)$/);
+    if (m) {
+      const name = m[1];
+      const rhs = m[2];
+
+      const bodyCmds = rhs
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      macrosFromHeader[name] = makeAliasMacro(name, bodyCmds);
+      continue;
+    }
+
+    // Anything else: header ends here
+    bodyStart = i;
+    break;
+  }
+
+  return {
+    macrosFromHeader,
+    bodyLines: lines.slice(bodyStart),
+  };
+}
+
+const { macrosFromHeader, bodyLines } = parseFileHeader(allLines);
+if (Object.keys(macrosFromHeader).length > 0) {
+  registerMacros(macrosFromHeader);
+}
 
 // ---------------------------------------------------------------------------
 // Core processing logic
@@ -221,7 +326,15 @@ function maxArgIndex(cmds) {
  * @returns {string} output VHS
  */
 function processText(input) {
-  const lines = String(input).split(/\r?\n/);
+  const allLines = String(input).split(/\r?\n/);
+
+  // First pass: file header aliases
+  const { macrosFromHeader, bodyLines } = parseFileHeader(allLines);
+  if (Object.keys(macrosFromHeader).length > 0) {
+    registerMacros(macrosFromHeader);
+  }
+
+  const lines = bodyLines;
   const out = [];
 
   let i = 0;
