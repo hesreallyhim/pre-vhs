@@ -1,16 +1,15 @@
 import { describe, it, expect } from "vitest";
-import {
-  processText,
-  registerHeaderTransform,
-} from "../src/index.js";
+import { createEngine } from "../src/index.js";
 
 describe.skip("header transforms: no cyclical expansion", () => {
   it("applies a doubler transform exactly once per header", () => {
+    const engine = createEngine();
+    const { registerTransform, processText } = engine;
     let callCount = 0;
 
     // Register a header transform that doubles commands,
     // but only for headers marked with "[double]" in the text.
-    registerHeaderTransform((cmds, ctx) => {
+    registerTransform("header", (cmds, ctx) => {
       if (!ctx.headerText.includes("[double]")) return cmds;
 
       callCount += 1;

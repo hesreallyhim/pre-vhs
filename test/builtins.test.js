@@ -1,48 +1,40 @@
 import { describe, it, expect } from "vitest";
-import {
-  processText,
-} from "../src/index.js";
+import { createEngine, formatType } from "../src/index.js";
 import builtinsPack from "../src/packs/builtins.js";
-
-builtinsPack({
-  registerMacros: (macros) => {
-    // index.js already exports registerMacros, but for tests we can
-    // just require index.js and call it directly in a real setup.
-    const { registerMacros } = require("../src/index.js");
-    registerMacros(macros);
-  },
-  helpers: {
-    formatType: require("../src/index.js").formatType,
-  },
-});
 
 describe("builtins pack", () => {
   it("BackspaceAll deletes entire payload", () => {
+    const engine = createEngine();
+    builtinsPack(engine);
     const input = [
       "Use BackspaceAll",
       "> BackspaceAll $1",
       "hello",
     ].join("\n");
 
-    const out = processText(input).split("\n");
+    const out = engine.processText(input).split("\n");
     expect(out).toEqual(["Backspace 5"]);
   });
 
   it("TypeEnter types text and presses Enter", () => {
+    const engine = createEngine();
+    builtinsPack(engine);
     const input = [
       "Use TypeEnter",
       "> TypeEnter $1",
       "echo hi",
     ].join("\n");
 
-    const out = processText(input).split("\n");
+    const out = engine.processText(input).split("\n");
     expect(out).toEqual([
-      'Type "echo hi"',
+      formatType("echo hi"),
       "Enter",
     ]);
   });
 
   it("Gap inserts Sleep between commands", () => {
+    const engine = createEngine();
+    builtinsPack(engine);
     const input = [
       "Use Gap",
       "> Gap 200ms",
@@ -50,7 +42,7 @@ describe("builtins pack", () => {
       "echo hi",
     ].join("\n");
 
-    const out = processText(input).split("\n");
+    const out = engine.processText(input).split("\n");
 
     // Expected pattern:
     // Type "echo hi"

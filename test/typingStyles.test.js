@@ -1,22 +1,17 @@
 import { describe, it, expect, vi } from "vitest";
-import {
-  processText,
-  registerMacros,
-  registerHeaderTransform,
-  formatType,
-  baseCommandName,
-} from "../src/index.js";
+import { createEngine, formatType, baseCommandName } from "../src/index.js";
 import typingStylesPack from "../src/packs/typingStyles.js";
-
-typingStylesPack({
-  registerMacros,
-  registerHeaderTransform,
-  helpers: { formatType, baseCommandName },
-  options: { defaultStyle: "default" },
-});
 
 describe("typingStyles pack", () => {
   it("human style splits into Type@... chunks", () => {
+    const engine = createEngine();
+    typingStylesPack({
+      registerMacros: engine.registerMacros,
+      registerTransform: engine.registerTransform,
+      helpers: { formatType, baseCommandName },
+      options: { defaultStyle: "default" },
+    });
+
     // deterministic random
     const randSpy = vi.spyOn(Math, "random").mockReturnValue(0.5);
 
@@ -26,7 +21,7 @@ describe("typingStyles pack", () => {
       "hello world",
     ].join("\n");
 
-    const out = processText(input).split("\n");
+    const out = engine.processText(input).split("\n");
 
     // each chunk is either "hello", " ", "world"
     // We only assert pattern, not exact delays.
@@ -40,6 +35,14 @@ describe("typingStyles pack", () => {
   });
 
   it("sloppy style produces at least one Backspace when randomness is fixed", () => {
+    const engine = createEngine();
+    typingStylesPack({
+      registerMacros: engine.registerMacros,
+      registerTransform: engine.registerTransform,
+      helpers: { formatType, baseCommandName },
+      options: { defaultStyle: "default" },
+    });
+
     // Force random < 0.4 to trigger mistakes
     const randSpy = vi.spyOn(Math, "random").mockReturnValue(0.1);
 
@@ -49,7 +52,7 @@ describe("typingStyles pack", () => {
       "testing",
     ].join("\n");
 
-    const out = processText(input).split("\n");
+    const out = engine.processText(input).split("\n");
     expect(out).toContain("Backspace 1");
 
     randSpy.mockRestore();

@@ -1,14 +1,9 @@
 import { describe, it, expect } from "vitest";
-import {
-  processText,
-  registerMacros,
-  registerHeaderTransform,
-  formatType,
-  baseCommandName,
-} from "../src/index.js";
+import { createEngine, formatType, baseCommandName } from "../src/index.js";
 
 describe("engine: basic behavior", () => {
   it("passes through non-meta lines unchanged", () => {
+    const { processText } = createEngine();
     const input = `Output my-demo
 Set FontSize 14
 Type "echo hi"
@@ -18,6 +13,7 @@ Enter`;
   });
 
   it("expands a simple Type directive with $1 and Enter", () => {
+    const { processText } = createEngine();
     const input = [
       "> Type $1, Enter",
       "echo hi",
@@ -25,12 +21,13 @@ Enter`;
 
     const output = processText(input).split("\n");
     expect(output).toEqual([
-      'Type "echo hi"',
+      formatType("echo hi"),
       "Enter",
     ]);
   });
 
   it("supports header aliases at top of file", () => {
+    const { processText } = createEngine();
     const input = [
       "TypeEnter = Type $1, Enter",
       "",
@@ -40,12 +37,13 @@ Enter`;
 
     const output = processText(input).split("\n");
     expect(output).toEqual([
-      'Type "ls -la"',
+      formatType("ls -la"),
       "Enter",
     ]);
   });
 
   it("supports multiple positional args $1, $2", () => {
+    const { processText } = createEngine();
     const input = [
       "> Type \"git commit -m '$1'\", Enter, Type \"# $2\", Enter",
       "message",
@@ -54,9 +52,9 @@ Enter`;
 
     const lines = processText(input).split("\n");
     expect(lines).toEqual([
-      'Type "git commit -m \'message\'"',
+      formatType("git commit -m 'message'"),
       "Enter",
-      'Type "# note"',
+      formatType("# note"),
       "Enter",
     ]);
   });
