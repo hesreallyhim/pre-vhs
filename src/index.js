@@ -38,10 +38,16 @@ const path = require("path");
  */
 function formatType(text = "") {
   const s = String(text);
-  const escaped = s
-    .replace(/\\/g, "\\\\") // backslashes
-    .replace(/"/g, '\\"');  // double quotes
-  return `Type "${escaped}"`;
+
+  // Only backticks need escaping inside a backtick-quoted literal.
+  const escaped = s.replace(/`/g, "\\`");
+
+  return `Type \`${escaped}\``;
+
+//   const escaped = s
+//     .replace(/\\/g, "\\\\") // backslashes
+//     .replace(/"/g, '\\"');  // double quotes
+//   return `Type "${escaped}"`;
 }
 
 /**
@@ -342,24 +348,33 @@ function processText(input) {
     if (/^\s*>\s*/.test(line)) {
       const headerText = line.replace(/^\s*>\s*/, "");
       let cmds = headerText
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
 
-      // Apply header transforms (typing styles, doublers, etc.)
-      cmds = applyHeaderTransforms(cmds, {
-        lineNo: i + 1,
-        headerText,
-      });
-
-      // Determine how many positional args ($1, $2, ...) are needed
-      const maxIdx = maxArgIndex(cmds);
+      cmds = applyHeaderTransforms(cmds, { lineNo: i + 1, headerText });
+          
+      // 1) normal positional-arg detection
+      let maxIdx = maxArgIndex(cmds);
+          
+      // 2) detect a *bare* Type (no arguments) if no $1..$n used
+      const hasBareType =
+        maxIdx === 0 &&
+        cmds.some((c) => {
+          const trimmed = c.trim();
+          return trimmed === "Type"; // exactly "Type", no extra tokens
+        });
+      
+      // 3) if we have a bare Type and no $n, treat the next line as $1
+      if (hasBareType) {
+        maxIdx = 1;
+      }
+      
       const args = [];
       for (let k = 1; k <= maxIdx; k++) {
         i += 1;
         args[k] = lines[i] ?? "";
       }
-
       const payload = args[1] || "";
 
       // Expand each command
