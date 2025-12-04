@@ -23,7 +23,7 @@
  */
 
 module.exports = function typingStylesPack(engine) {
-  const { registerMacros, registerHeaderTransform, helpers, options } = engine;
+  const { registerMacros, registerTransform, helpers, options } = engine;
   const { formatType, baseCommandName } = helpers;
 
   // ---------------------------------------------------------------------------
@@ -163,35 +163,26 @@ module.exports = function typingStylesPack(engine) {
       }
       return [];
     },
+  };
 
-    /**
-     * HumanType
-     *
-     * Normally used via the header transform that rewrites
-     * plain "Type" when style is "human".
-     */
+  const styleMacros = {
     HumanType(payload) {
       return expandHuman(payload || "");
     },
-
-    /**
-     * SloppyType
-     *
-     * Normally used via the header transform that rewrites
-     * plain "Type" when style is "sloppy".
-     */
     SloppyType(payload) {
       return expandSloppy(payload || "");
     },
   };
 
-  registerMacros(macros);
+  // SetTypingStyle respects Use; style expanders are always available once the pack is loaded.
+  registerMacros(macros); // requireUse defaults to true
+  registerMacros(styleMacros, { requireUse: false });
 
   // ---------------------------------------------------------------------------
   // Header transform: rewrite Type -> HumanType / SloppyType
   // ---------------------------------------------------------------------------
 
-  registerHeaderTransform((cmds) => {
+  registerTransform("header", (cmds) => {
     if (currentStyle === "default") return cmds;
 
     return cmds.map((c) => {

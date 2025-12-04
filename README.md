@@ -14,10 +14,10 @@ Typing commands, fixing mistakes, waiting between steps—these become repetitiv
 
 pre-vhs makes .tape authoring dramatically easier by adding:
 
-- Macros (built-in or user-defined)
+- Macros (only `Type` is always on; everything else is opt-in)
 - Header aliases for reusable patterns
 - Positional arguments ($1, $2, …)
-- Header transforms (typing styles, doublers, etc.)
+- Phase-based transforms (typing styles, doublers, gap insertion, etc.)
 - Optional packs, opt-in via Use ...
 - Absolutely no runtime dependency—output is plain VHS.
 
@@ -109,9 +109,9 @@ Aliases expand just like directives. They may reference built-ins or other alias
 
 ---
 
-4. Built-ins (opt-in via Use ...)
+4. Built-ins & `Use`
 
-The engine ships a small standard library, but nothing is active unless you import it.
+Only `Type` is always available for correct escaping. All other helpers are opt-in via packs + `Use ...`.
 
 Examples:
 
@@ -156,11 +156,15 @@ Sloppy style injects occasional mistakes and corrections for realism.
 
 ---
 
-6. Header Transforms (advanced)
+6. Transforms & Phases (advanced)
 
-Packs can define transformations on directive headers before expansion.
+Packs can hook into multiple phases:
+- `header`: rewrite header tokens before expansion (e.g., Type→HumanType).
+- `preExpandToken`: per-token tweaks before macro lookup.
+- `postExpand`: operate on emitted VHS lines (e.g., Gap inserts Sleep between commands, screenshot-after-every-command).
+- `finalize`: last chance to rewrite the entire tape.
 
-Example: Doubling every command:
+Example: Doubling every command (header phase):
 
 Use Doubler
 
@@ -180,7 +184,20 @@ Typing styles use the same mechanism.
 
 ---
 
-7. Importing Packs (Project-wide)
+7. Recursive Macros (advanced)
+
+Macros can expand into other macro calls; the engine recurses with guards
+(depth/step limits and cycle detection). This makes layered helpers like:
+
+TypeSleep = Type $1, Sleep 1s
+EnterEcho = Enter, Type $1
+RunAndEcho = TypeSleep $1, EnterEcho $2
+
+work as expected without manual “with-gap” variants.
+
+---
+
+8. Importing Packs (Project-wide)
 
 Optional packs may be enabled globally with a configuration file.
 

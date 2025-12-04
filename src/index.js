@@ -1,53 +1,32 @@
 #!/usr/bin/env node
 
 /**
- * Core VHS preprocessor engine + CLI.
+ * Core VHS preprocessor engine + CLI (single-file layout).
  *
- * Features:
- *   - Meta lines: `> CmdA, CmdB arg, CmdC`
- *   - Positional args: $1, $2, ... read from subsequent lines
- *   - Registerable macros (META)
- *   - Registerable header transforms (for things like typing styles, doublers, etc.)
- *   - Small built-in meta-vocabulary: Type, BackspaceAll, BackspaceAllButOne, Gap
- *   - File header aliases at the top of .tape.pre:
- *       AliasName = Cmd1, Cmd2, Cmd3
- *     until the first non-alias / non-comment / non-blank line.
- *
- * Packs are configured via pre-vhs.config.js/json and can register
- * additional macros and header transforms.
+ * Design goals in this pass:
+ *   - Only `Type` is always-on. Everything else is opt-in via packs + `Use ...`.
+ *   - Phase-based transforms: header, preExpandToken, postExpand, finalize.
+ *   - Recursive macro expansion with guards against cycles/blowups.
+ *   - No module-level mutable state leaking across runs; each engine instance
+ *     carries its own registries.
  */
 
 const fs = require("fs");
 const path = require("path");
 
-/**
- * @typedef {Object} PreVhsPackConfig
- * @property {string} module   - Module specifier (path or package name)
- * @property {boolean} [enabled] - Default true
- * @property {any} [options]   - Arbitrary options passed to the pack
- */
-
-/**
- * @typedef {Object} PreVhsConfig
- * @property {Array<string | PreVhsPackConfig>} [packs]
- */
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 /**
  * Escape arbitrary text for a VHS Type command.
- * Always emits: Type "escaped text"
+ * Always emits: Type `escaped text`
  */
 function formatType(text = "") {
   const s = String(text);
-
   // Only backticks need escaping inside a backtick-quoted literal.
   const escaped = s.replace(/`/g, "\\`");
-
   return `Type \`${escaped}\``;
-
-//   const escaped = s
-//     .replace(/\\/g, "\\\\") // backslashes
-//     .replace(/"/g, '\\"');  // double quotes
-//   return `Type "${escaped}"`;
 }
 
 /**
@@ -62,131 +41,26 @@ function baseCommandName(line) {
   return trimmed.split(/\s+/, 1)[0];
 }
 
-// ---------------------------------------------------------------------------
-// Macro registry and header transforms
-// ---------------------------------------------------------------------------
-
 /**
- * META is the macro registry.
- *   key: macro name (base word), e.g. "Type", "GitCommit"
- *   val: (payload: string, rawCmd: string, args: string[]) => string[]
+ * Compute max positional argument index referenced in a list of header tokens.
  */
-const META = Object.create(null);
-
-/** @type {Array<(cmds:string[], ctx:{lineNo:number, headerText:string}) => string[]|void>} */
-const headerTransforms = [];
-
-/**
- * Register additional macros from packs.
- *
- * @param {Record<string,(payload:string, rawCmd:string, args:string[])=>string[]>} macros
- */
-function registerMacros(macros) {
-  if (!macros || typeof macros !== "object") return;
-  for (const [name, fn] of Object.entries(macros)) {
-    if (typeof fn === "function") {
-      META[name] = fn;
+function maxArgIndex(cmds) {
+  let max = 0;
+  for (const cmd of cmds) {
+    const matches = String(cmd).match(/\$(\d+)/g);
+    if (!matches) continue;
+    for (const m of matches) {
+      const n = Number(m.slice(1)); // skip '$'
+      if (Number.isFinite(n) && n > max) max = n;
     }
   }
+  return max;
 }
-
-/**
- * Register a header transform.
- *
- * A header transform is a pure function operating on the list of
- * commands for a single meta line:
- *
- *   fn(["Type", "Enter"], { lineNo, headerText }) => ["HumanType", "Enter"]
- */
-function registerHeaderTransform(fn) {
-  if (typeof fn === "function") {
-    headerTransforms.push(fn);
-  }
-}
-
-function applyHeaderTransforms(cmds, ctx) {
-  let current = cmds;
-  for (const fn of headerTransforms) {
-    const next = fn(current, ctx);
-    if (Array.isArray(next) && next.length) current = next;
-  }
-  return current;
-}
-
-// ---------------------------------------------------------------------------
-// Built-in core macros (meta-vocabulary)
-// ---------------------------------------------------------------------------
-
-let CURRENT_GAP = null;
-
-/**
- * Type: takes payload (typically $1) and emits a single VHS Type line.
- */
-META.Type = function Type(payload /* string */) {
-  return [formatType(payload || "")];
-};
-
-/**
- * BackspaceAll: delete as many characters as in the payload.
- */
-META.BackspaceAll = function BackspaceAll(payload = "") {
-  const n = String(payload).length;
-  return [`Backspace ${n}`];
-};
-
-/**
- * BackspaceAllButOne: delete all but the last character of the payload.
- */
-META.BackspaceAllButOne = function BackspaceAllButOne(payload = "") {
-  const len = String(payload).length;
-  const n = Math.max(len - 1, 0);
-  return [`Backspace ${n}`];
-};
-
-/**
- * Gap: configure an inter-command Sleep that is automatically inserted
- * between subsequent commands (except Sleep/Gap itself).
- *
- * Example:
- *   > Gap 500ms
- *
- *   > Type $1, Enter
- *   hello
- *
- *   -> Type "hello"
- *      Sleep 500ms
- *      Enter
- *
- * Gap itself emits no VHS lines; it only updates CURRENT_GAP.
- */
-META.Gap = function Gap(_payload, rawCmd) {
-  const m = rawCmd.match(/Gap\s+(.+)/);
-  CURRENT_GAP = m ? m[1].trim() : null;
-  return [];
-};
-
-function shouldInsertGap(nextBase, lastBase) {
-  if (!CURRENT_GAP) return false;
-  if (!nextBase) return false;
-  if (!lastBase) return false;
-  if (nextBase === "Sleep" || nextBase === "Gap") return false;
-  if (lastBase === "Gap") return false;
-  return true;
-}
-
-// ---------------------------------------------------------------------------
-// File-header alias support
-// ---------------------------------------------------------------------------
 
 /**
  * Given an alias name and its body command list, build a macro function
- * that:
- *   - substitutes $1, $2, ... using the call-site args
- *   - returns a list of header tokens (which will themselves be expanded
- *     by META / packs as usual).
- *
- * @param {string} name
- * @param {string[]} bodyCmds
+ * that substitutes $1, $2, ... using the call-site args and returns
+ * a list of header tokens (which themselves will be expanded as usual).
  */
 function makeAliasMacro(name, bodyCmds) {
   return function aliasMacro(_payload, _rawCmd, args) {
@@ -201,22 +75,15 @@ function makeAliasMacro(name, bodyCmds) {
 
 /**
  * Parse a file header at the top of the .tape.pre:
- *
  * - Skips blank lines and comments (#..., //...).
- * - Treats lines of the form:
- *       Name = Cmd1, Cmd2, Cmd3
- *   as alias definitions.
- * - Stops at the first line that is not blank/comment/alias.
- *
- * Returns:
- *   - macrosFromHeader: { Name: macroFn, ... }
- *   - bodyLines: remaining lines (the actual tape body)
- *
- * @param {string[]} lines
+ * - `Use ...` lines collect macro names to activate.
+ * - Alias lines: Name = Cmd1, Cmd2, ...
+ * - Stops at the first line that is not blank/comment/alias/Use.
  */
 function parseFileHeader(lines) {
   const macrosFromHeader = {};
-  let bodyStart = 0;
+  const useNames = [];
+  let bodyStart = lines.length;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -227,23 +94,14 @@ function parseFileHeader(lines) {
     // Comments
     if (/^\s*#/.test(line) || /^\s*\/\//.test(line)) continue;
 
-    // NEW: Use statements: Use BackspaceAll BackspaceAllButOne Gap
+    // Use statements: Use Foo Bar Baz
     const useMatch = line.match(/^\s*Use\s+(.+)$/);
     if (useMatch) {
       const names = useMatch[1]
         .split(/\s+/)
         .map((s) => s.trim())
         .filter(Boolean);
-
-      for (const name of names) {
-        const macroFn = BUILTIN_MACROS[name];
-        if (typeof macroFn === "function") {
-          macrosFromHeader[name] = macroFn;
-        } else {
-          // Optional: warn or ignore silently
-          // console.warn(`[pre-vhs] Unknown builtin macro '${name}' on header line ${i+1}`);
-        }
-      }
+      useNames.push(...names);
       continue;
     }
 
@@ -269,137 +127,285 @@ function parseFileHeader(lines) {
 
   return {
     macrosFromHeader,
+    useNames,
     bodyLines: lines.slice(bodyStart),
+    bodyStartIndex: bodyStart,
   };
 }
 
 // ---------------------------------------------------------------------------
-// Core processing logic
+// Engine factory
 // ---------------------------------------------------------------------------
 
-/**
- * Expand a single command into one or more VHS lines.
- *
- * @param {string} cmd   Raw header token, e.g. "Type $1" or "Sleep 1s"
- * @param {string} payload  Usually args[1] (for Type-like macros)
- * @param {string[]} args   Positional args: args[1] = first payload line, etc.
- * @returns {string[]} VHS lines
- */
-function expandSingleCommand(cmd, payload, args) {
-  const trimmed = cmd.trim();
-  if (!trimmed) return [];
+function createEngine(options = {}) {
+  // registry: name -> { fn, requireUse }
+  const macroRegistry = new Map();
 
-  const base = baseCommandName(trimmed);
-  const macro = META[base];
+  // transforms per phase
+  const transforms = {
+    header: [],
+    preExpandToken: [],
+    postExpand: [],
+    finalize: [],
+  };
 
-  if (macro) {
-    const res = macro(payload, trimmed, args);
-    return Array.isArray(res) ? res : [];
-  }
+  // Guards
+  const MAX_EXPANSION_STEPS = options.maxExpansionSteps || 10000;
+  const MAX_EXPANSION_DEPTH = options.maxExpansionDepth || 32;
 
-  // No macro registered: treat as raw VHS line
-  return [trimmed];
-}
-
-/**
- * Compute max positional argument index referenced in a header.
- *
- * @param {string[]} cmds
- * @returns {number}
- */
-function maxArgIndex(cmds) {
-  let max = 0;
-  for (const cmd of cmds) {
-    const matches = String(cmd).match(/\$(\d+)/g);
-    if (!matches) continue;
-    for (const m of matches) {
-      const n = Number(m.slice(1)); // skip '$'
-      if (Number.isFinite(n) && n > max) max = n;
+  // Helpers to register macros/transforms
+  function registerMacros(macros, macroOptions = {}) {
+    if (!macros || typeof macros !== "object") return;
+    const requireUse = macroOptions.requireUse !== false; // default true
+    for (const [name, fn] of Object.entries(macros)) {
+      if (typeof fn === "function") {
+        macroRegistry.set(name, { fn, requireUse });
+      }
     }
   }
-  return max;
-}
 
-/**
- * Process a full pre-VHS script string into VHS.
- *
- * @param {string} input
- * @returns {string} output VHS
- */
-function processText(input) {
-  const allLines = String(input).split(/\r?\n/);
-
-  // First pass: file header aliases
-  const { macrosFromHeader, bodyLines } = parseFileHeader(allLines);
-  if (Object.keys(macrosFromHeader).length > 0) {
-    registerMacros(macrosFromHeader);
+  function registerTransform(phase, fn) {
+    if (!transforms[phase]) return;
+    if (typeof fn === "function") {
+      transforms[phase].push(fn);
+    }
   }
 
-  const lines = bodyLines;
-  const out = [];
+  // Always-on core macro: Type
+  registerMacros(
+    {
+      Type(payload /* string */) {
+        return [formatType(payload || "")];
+      },
+    },
+    { requireUse: false }
+  );
 
-  let i = 0;
-  let lastBase = "";
+  // -------------------------------------------------------------------------
+  // Transform application helpers
+  // -------------------------------------------------------------------------
 
-  while (i < lines.length) {
-    const line = lines[i];
+  function applyHeaderTransforms(cmds, ctx) {
+    let current = cmds;
+    for (const fn of transforms.header) {
+      const next = fn(current, ctx);
+      if (Array.isArray(next)) current = next;
+    }
+    return current;
+  }
 
-    // Meta line: starts with '>'
-    if (/^\s*>\s*/.test(line)) {
-      const headerText = line.replace(/^\s*>\s*/, "");
-      let cmds = headerText
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-
-      cmds = applyHeaderTransforms(cmds, { lineNo: i + 1, headerText });
-          
-      // 1) normal positional-arg detection
-      let maxIdx = maxArgIndex(cmds);
-          
-      // 2) detect a *bare* Type (no arguments) if no $1..$n used
-      const hasBareType =
-        maxIdx === 0 &&
-        cmds.some((c) => {
-          const trimmed = c.trim();
-          return trimmed === "Type"; // exactly "Type", no extra tokens
-        });
-      
-      // 3) if we have a bare Type and no $n, treat the next line as $1
-      if (hasBareType) {
-        maxIdx = 1;
-      }
-      
-      const args = [];
-      for (let k = 1; k <= maxIdx; k++) {
-        i += 1;
-        args[k] = lines[i] ?? "";
-      }
-      const payload = args[1] || "";
-
-      // Expand each command
-      for (const cmd of cmds) {
-        const expanded = expandSingleCommand(cmd, payload, args);
-        for (const vhsLine of expanded) {
-          const base = baseCommandName(vhsLine);
-          if (shouldInsertGap(base, lastBase)) {
-            out.push(`Sleep ${CURRENT_GAP}`);
-          }
-          out.push(vhsLine);
-          if (base) lastBase = base;
+  function applyPreExpandTransforms(cmd, ctx) {
+    let bucket = [cmd];
+    for (const fn of transforms.preExpandToken) {
+      const nextBucket = [];
+      for (const token of bucket) {
+        const res = fn(token, ctx);
+        if (Array.isArray(res) && res.length) {
+          nextBucket.push(...res);
+        } else if (typeof res === "string") {
+          nextBucket.push(res);
+        } else {
+          nextBucket.push(token);
         }
       }
-    } else {
-      // Non-meta line: passthrough as-is
-      out.push(line);
-      const base = baseCommandName(line);
-      if (base) lastBase = base;
+      bucket = nextBucket;
     }
-
-    i += 1;
+    return bucket;
   }
 
-  return out.join("\n");
+  function applyPostExpandTransforms(lines, ctx) {
+    let bucket = Array.isArray(lines) ? [...lines] : [lines];
+    for (const fn of transforms.postExpand) {
+      const nextBucket = [];
+      for (const line of bucket) {
+        const res = fn(line, ctx);
+        if (Array.isArray(res) && res.length) {
+          nextBucket.push(...res);
+        } else if (typeof res === "string") {
+          nextBucket.push(res);
+        } else {
+          nextBucket.push(line);
+        }
+      }
+      bucket = nextBucket;
+    }
+    return bucket;
+  }
+
+  function applyFinalizeTransforms(lines) {
+    let current = lines;
+    for (const fn of transforms.finalize) {
+      const next = fn(current);
+      if (Array.isArray(next)) current = next;
+    }
+    return current;
+  }
+
+  // -------------------------------------------------------------------------
+  // Expansion logic
+  // -------------------------------------------------------------------------
+
+  function processText(input) {
+    const allLines = String(input).split(/\r?\n/);
+    const { macrosFromHeader, useNames, bodyLines, bodyStartIndex } =
+      parseFileHeader(allLines);
+
+    const useSet = new Set(useNames);
+    registerMacros(macrosFromHeader, { requireUse: false });
+
+    const out = [];
+    const state = {
+      lastEmittedBase: "",
+      expansionSteps: 0,
+    };
+
+    let i = 0;
+    while (i < bodyLines.length) {
+      const line = bodyLines[i];
+      const logicalLineNo = bodyStartIndex + i + 1;
+
+      // Meta line: starts with '>'
+      if (/^\s*>\s*/.test(line)) {
+        const headerText = line.replace(/^\s*>\s*/, "");
+        let tokens = headerText
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+
+        tokens = applyHeaderTransforms(tokens, { lineNo: logicalLineNo, headerText });
+
+        // Argument detection
+        let maxIdx = maxArgIndex(tokens);
+        const hasBareType =
+          maxIdx === 0 &&
+          tokens.some((c) => {
+            const t = c.trim();
+            return t === "Type";
+          });
+        if (hasBareType) maxIdx = 1;
+
+        const args = [];
+        for (let k = 1; k <= maxIdx; k++) {
+          i += 1;
+          args[k] = bodyLines[i] ?? "";
+        }
+        const payload = args[1] || "";
+
+        // Expand each token
+        for (let idxTok = 0; idxTok < tokens.length; idxTok++) {
+          const token = tokens[idxTok];
+
+          const expanded = expandTokenRecursive(token, payload, args, useSet, {
+            lineNo: logicalLineNo,
+            headerText,
+            tokenIndex: idxTok,
+          });
+
+          emitLinesWithPostTransforms(expanded, {
+            lineNo: logicalLineNo,
+            headerText,
+          });
+        }
+      } else {
+        // Non-meta line: passthrough as-is
+        emitLinesWithPostTransforms([line], { lineNo: logicalLineNo });
+      }
+
+      i += 1;
+    }
+
+    const finalized = applyFinalizeTransforms(out);
+    return finalized.join("\n");
+
+    // -------------------------------------------------------
+    // Local helpers (closure over state/out/useSet)
+    // -------------------------------------------------------
+
+    function expandTokenRecursive(token, payload, args, useSetLocal, ctx, stack = []) {
+      if (state.expansionSteps >= MAX_EXPANSION_STEPS) {
+        throw new Error(
+          `Macro expansion exceeded ${MAX_EXPANSION_STEPS} steps around line ${ctx.lineNo}`
+        );
+      }
+      state.expansionSteps += 1;
+
+      const results = [];
+      const preTokens = applyPreExpandTransforms(token, ctx);
+
+      for (const tok of preTokens) {
+        const trimmed = tok.trim();
+        if (!trimmed) continue;
+
+        const base = baseCommandName(trimmed);
+        const entry = macroRegistry.get(base);
+        const active =
+          entry && (entry.requireUse === false || useSetLocal.has(base));
+
+        if (!entry || !active) {
+          results.push(trimmed);
+          continue;
+        }
+
+        if (stack.includes(base)) {
+          throw new Error(
+            `Macro recursion detected: ${[...stack, base].join(" -> ")}`
+          );
+        }
+        if (stack.length >= MAX_EXPANSION_DEPTH) {
+          throw new Error(
+            `Macro expansion depth exceeded ${MAX_EXPANSION_DEPTH} near line ${ctx.lineNo}`
+          );
+        }
+
+        const res = entry.fn(payload, trimmed, args, ctx);
+        const arr = Array.isArray(res) ? res : [];
+
+        for (const child of arr) {
+          const childBase = baseCommandName(child);
+          // Avoid immediately re-expanding the same macro output (e.g., Type -> Type)
+          if (childBase === base) {
+            results.push(String(child));
+            continue;
+          }
+
+          results.push(
+            ...expandTokenRecursive(
+              child,
+              payload,
+              args,
+              useSetLocal,
+              ctx,
+              [...stack, base]
+            )
+          );
+        }
+      }
+
+      return results;
+    }
+
+    function emitLinesWithPostTransforms(lines, ctx) {
+      const list = Array.isArray(lines) ? lines : [lines];
+      for (const line of list) {
+        const expanded = applyPostExpandTransforms(line, {
+          ...ctx,
+          lastLineBase: state.lastEmittedBase,
+        });
+        for (const l of expanded) {
+          const base = baseCommandName(l);
+          if (base) state.lastEmittedBase = base;
+          out.push(l);
+        }
+      }
+    }
+  }
+
+  return {
+    registerMacros,
+    registerTransform,
+    processText,
+    helpers: { formatType, baseCommandName },
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -408,9 +414,6 @@ function processText(input) {
 
 /**
  * Load config from explicit path or default pre-vhs.config.* in CWD.
- *
- * @param {string|undefined} configPathFromArg
- * @returns {PreVhsConfig}
  */
 function loadConfig(configPathFromArg) {
   const cwd = process.cwd();
@@ -437,9 +440,7 @@ function loadConfig(configPathFromArg) {
   }
 
   if (!finalPath) {
-    /** @type {PreVhsConfig} */
-    const empty = { packs: [] };
-    return empty;
+    return { packs: [] };
   }
 
   // eslint-disable-next-line global-require, import/no-dynamic-require
@@ -451,7 +452,7 @@ function loadConfig(configPathFromArg) {
   if (!cfg || typeof cfg !== "object") cfg = {};
   if (!Array.isArray(cfg.packs)) cfg.packs = [];
 
-  return /** @type {PreVhsConfig} */ (cfg);
+  return cfg;
 }
 
 /**
@@ -462,19 +463,17 @@ function loadConfig(configPathFromArg) {
  *
  * where `engine` has:
  *   - registerMacros
- *   - registerHeaderTransform
+ *   - registerTransform (phase-based)
  *   - helpers: { formatType, baseCommandName }
  *   - options: whatever is in packConfig.options
- *
- * @param {PreVhsConfig} config
  */
-function initPacksFromConfig(config) {
+function initPacksFromConfig(config, engine) {
   const cwd = process.cwd();
   const packs = config.packs || [];
 
   const engineBase = {
-    registerMacros,
-    registerHeaderTransform,
+    registerMacros: engine.registerMacros,
+    registerTransform: engine.registerTransform,
     helpers: { formatType, baseCommandName },
   };
 
@@ -508,6 +507,18 @@ function initPacksFromConfig(config) {
   }
 }
 
+/**
+ * Convenience wrapper: create a fresh engine, init packs from config (if any),
+ * and process input text in a single call.
+ */
+function processText(input, options = {}) {
+  const engine = createEngine(options.engineOptions);
+  if (options.config) {
+    initPacksFromConfig(options.config, engine);
+  }
+  return engine.processText(input);
+}
+
 // ---------------------------------------------------------------------------
 // CLI
 // ---------------------------------------------------------------------------
@@ -537,7 +548,8 @@ if (require.main === module) {
   try {
     const { configPath, baseName } = parseArgs(process.argv);
     const config = loadConfig(configPath);
-    initPacksFromConfig(config);
+    const engine = createEngine();
+    initPacksFromConfig(config, engine);
 
     if (baseName) {
       const cwd = process.cwd();
@@ -550,12 +562,12 @@ if (require.main === module) {
       }
 
       const input = fs.readFileSync(inputPath, "utf8");
-      const output = processText(input);
+      const output = engine.processText(input);
       fs.writeFileSync(outputPath, output, "utf8");
     } else {
       // stdin -> stdout mode
       const input = fs.readFileSync(0, "utf8");
-      const output = processText(input);
+      const output = engine.processText(input);
       process.stdout.write(output);
     }
   } catch (err) {
@@ -569,9 +581,10 @@ if (require.main === module) {
 // ---------------------------------------------------------------------------
 
 module.exports = {
+  createEngine,
   processText,
-  registerMacros,
-  registerHeaderTransform,
+  loadConfig,
+  initPacksFromConfig,
   formatType,
   baseCommandName,
 };
