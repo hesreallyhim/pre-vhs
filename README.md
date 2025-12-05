@@ -7,7 +7,7 @@ It gives you a tiny language for automating common VHS patterns while staying 10
 
 ---
 
-Why?
+## Why?
 
 VHS tapes are powerful but verbose.
 Typing commands, fixing mistakes, waiting between steps—these become repetitive fast.
@@ -25,21 +25,23 @@ You still write VHS. You just write less of it.
 
 ---
 
-Basic Usage
+## Basic Usage
 
 1. Install
 
-npm install -D pre-vhs
+`npm install -D pre-vhs`
 
 2. Write a .tape.pre
 
-# header
+### header
+
 ```text
 Use BackspaceAll Gap
 TypeEnter = Type $1, Enter
 ```
 
-# body
+### body
+
 ```text
 > Gap 200ms
 > Type $1, Enter
@@ -49,17 +51,17 @@ echo "hello"
 echo "bye"
 ```
 
-3. Build the tape
+## 3. Build the tape
 
-npx pre-vhs demo # reads demo.tape.pre → writes demo.tape
+`npx pre-vhs demo # reads demo.tape.pre → writes demo.tape`
 
 Or use stdin→stdout:
 
-cat demo.tape.pre | npx pre-vhs > demo.tape
+`cat demo.tape.pre | npx pre-vhs > demo.tape`
 
 ---
 
-Language Reference
+## Language Reference
 
 1. Meta-directives (> lines)
 
@@ -92,7 +94,7 @@ Expansion model (quick reference):
 
 ---
 
-2. Positional Arguments ($1..$n)
+## 2. Positional Arguments ($1..$n)
 
 Each $n in a directive consumes one line beneath it:
 
@@ -104,7 +106,7 @@ echo "second"
 
 ---
 
-3. Header Aliases
+## 3. Header Aliases
 
 Aliases only appear at the top of the file before the first non-header line.
 
@@ -127,7 +129,7 @@ Aliases expand just like directives. They may reference built-ins or other alias
 
 ---
 
-4. Built-ins & `Use`
+## 4. Built-ins & `Use`
 
 Only `Type` is always available for correct escaping. All other helpers are opt-in via packs + `Use ...`.
 
@@ -146,7 +148,7 @@ Use BackspaceAll BackspaceAllButOne Gap
 
 ---
 
-5. Typing Styles (optional pack)
+## 5. Typing Styles (optional pack)
 
 If you enable the typing-styles pack in pre-vhs.config.js:
 
@@ -178,14 +180,15 @@ Sloppy style injects occasional mistakes and corrections for realism.
 
 ---
 
-6. Transforms & Phases (advanced)
+## 6. Transforms & Phases (advanced)
 
 Packs can hook into multiple phases:
+
 - `header`: rewrite header tokens before expansion (e.g., Type→HumanType).
 - `preExpandToken`: per-token tweaks before macro lookup.
 - `postExpand`: operate on emitted VHS lines (e.g., Gap inserts Sleep between commands, screenshot-after-every-command).
 - `finalize`: last chance to rewrite the entire tape.
-Transform ordering: runs in registration order within a phase.
+  Transform ordering: runs in registration order within a phase.
 
 Example: Doubling every command (header phase):
 
@@ -213,7 +216,7 @@ Typing styles use the same mechanism.
 
 ---
 
-7. Recursive Macros (advanced)
+## 7. Recursive Macros (advanced)
 
 Macros can expand into other macro calls; the engine recurses with guards
 (depth/step limits and cycle detection). This makes layered helpers like:
@@ -228,25 +231,27 @@ work as expected without manual “with-gap” variants.
 
 ---
 
-8. Importing Packs (Project-wide)
+## 8. Importing Packs (Project-wide)
 
 Optional packs may be enabled globally with a configuration file.
 
 pre-vhs.config.js:
 
+```js
 module.exports = {
-packs: [
-"./packs/typingStyles.js",
-"./packs/gitBasics.js",
-"./packs/emojiShortcuts.js"
-]
+  packs: [
+    "./packs/typingStyles.js",
+    "./packs/gitBasics.js",
+    "./packs/emojiShortcuts.js",
+  ],
 };
+```
 
 These behave like Vim plugins: they provide macros, but the user still chooses whether to activate them with Use ....
 
 ---
 
-Examples
+## Examples
 
 Example: Git demo
 
@@ -266,7 +271,7 @@ git add .
 
 ---
 
-Example: Complex one-liner
+## Example: Complex one-liner
 
 Use BackspaceAll Gap
 
@@ -278,7 +283,7 @@ echo
 
 ---
 
-CLI Options
+## CLI Options
 
 pre-vhs <basename> # reads <basename>.tape.pre, outputs <basename>.tape
 pre-vhs --config path
@@ -286,7 +291,7 @@ cat file | pre-vhs # stdin → stdout mode
 
 ---
 
-Testing
+## Testing
 
 The test suite consists of:
 
@@ -297,7 +302,7 @@ The test suite consists of:
 
 ---
 
-Design Principles
+## Design Principles
 
 - Opt-in everything except Type
 - No magic: preprocessing is visible, predictable, diff-able
@@ -307,7 +312,7 @@ Design Principles
 
 ---
 
-Roadmap
+## Roadmap
 
 - More built-in macro packs (filesystem, shortcuts, demos)
 - Optional fenced JS header sections if needed
