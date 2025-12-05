@@ -293,6 +293,7 @@ The test suite consists of:
 - Golden file tests: .tape.pre → expected .tape
 - Unit tests: header parsing, alias resolution, built-ins, error reporting
 - Pack tests: typing styles, git, emoji shortcuts
+- Lint/format hooks: `npm run lint`, `npm run format`, pre-commit runs lint-staged
 
 ---
 
