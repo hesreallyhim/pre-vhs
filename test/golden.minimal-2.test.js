@@ -13,7 +13,7 @@ function readExample(relPath) {
 }
 
 describe("golden: minimal-2 demo", () => {
-  it.only("transforms demo.tape.pre into the expected demo.tape", () => {
+  it("transforms demo.tape.pre into the expected demo.tape", () => {
     const input = readExample("demo.tape.pre");
     const expected = readExample("demo.tape.expected");
 
