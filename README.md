@@ -1,5 +1,7 @@
 # pre-vhs
 
+![preview image](./pre-vhs-image-asset.png)
+
 A lightweight macro engine and DSL for writing VHS tapes faster, cleaner, and safer.
 
 pre-vhs transforms a compact, expressive .tape.pre file into a valid VHS .tape.
