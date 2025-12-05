@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createEngine, formatType, baseCommandName } from "../src/index.js";
+import { createEngine, formatType } from "../src/index.js";
 
 describe("engine: basic behavior", () => {
   it("passes through non-meta lines unchanged", () => {

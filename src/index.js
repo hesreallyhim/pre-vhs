@@ -480,7 +480,6 @@ function loadConfig(configPathFromArg) {
     return { packs: [] };
   }
 
-  // eslint-disable-next-line global-require, import/no-dynamic-require
   let cfg = require(finalPath);
   if (cfg && typeof cfg === "object" && "default" in cfg) {
     cfg = cfg.default;
@@ -535,7 +534,6 @@ function initPacksFromConfig(config, engine) {
       ? path.resolve(cwd, moduleId)
       : moduleId;
 
-    // eslint-disable-next-line global-require, import/no-dynamic-require
     const packFactory = require(resolved);
     if (typeof packFactory === "function") {
       const registerMacros = autoUse

@@ -70,8 +70,8 @@ module.exports = function probePack(engine) {
       stderr = result.stderr || "";
       exitCode = typeof result.status === "number" ? result.status : null;
       if (result.error) error = String(result.error);
-    } catch (e) {
-      error = String(e);
+    } catch (err) {
+      error = String(err || "");
     }
 
     const combined = stdout + stderr + (error ? error : "");
@@ -122,7 +122,7 @@ module.exports = function probePack(engine) {
       if (m) {
         try {
           pattern = new RegExp(m[1]);
-        } catch (e) {
+        } catch {
           pattern = null;
         }
       }

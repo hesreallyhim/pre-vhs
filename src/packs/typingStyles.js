@@ -24,7 +24,7 @@
 
 module.exports = function typingStylesPack(engine) {
   const { registerMacros, registerTransform, helpers, options } = engine;
-  const { formatType, baseCommandName } = helpers;
+  const { baseCommandName } = helpers;
 
   // ---------------------------------------------------------------------------
   // State
