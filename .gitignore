@@ -1,7 +1,9 @@
 node_modules/
-.DS_Store
+pre-vhs/node_modules/
 coverage/
+pre-vhs/coverage/
 .nyc_output/
 *.log
 .eslintcache
+.DS_Store
 .npmrc

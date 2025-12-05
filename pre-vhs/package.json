@@ -12,6 +12,7 @@
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "prepare-release": "npm run lint && npm run test && npm run coverage",
+    "lint-staged": "lint-staged",
     "prepare": "husky"
   },
   "devDependencies": {

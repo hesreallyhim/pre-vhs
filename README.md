@@ -7,6 +7,12 @@ A lightweight macro engine and DSL for writing VHS tapes faster, cleaner, and sa
 pre-vhs transforms a compact, expressive .tape.pre file into a valid VHS .tape.
 It gives you a tiny language for automating common VHS patterns while staying 100% compatible with standard VHS syntax.
 
+Repo layout (code lives under `pre-vhs/` to keep this landing page clean):
+
+```
+pre-vhs/   # package source, tests, examples, docs
+```
+
 ---
 
 ## Why?
