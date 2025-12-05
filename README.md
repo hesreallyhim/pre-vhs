@@ -1,11 +1,17 @@
 ![npm](https://img.shields.io/npm/v/pre-vhs)</sub>
 
-![preview image](./pre-vhs-image-asset.png)
+![preview image](./pre-vhs/docs/pre-vhs-image-asset.png)
 
 A lightweight macro engine and DSL for writing VHS tapes faster, cleaner, and safer.
 
 pre-vhs transforms a compact, expressive .tape.pre file into a valid VHS .tape.
 It gives you a tiny language for automating common VHS patterns while staying 100% compatible with standard VHS syntax.
+
+Repo layout (code lives under `pre-vhs/` to keep this landing page clean):
+
+```
+pre-vhs/   # package source, tests, examples, docs
+```
 
 Repo layout (code lives under `pre-vhs/` to keep this landing page clean):
 

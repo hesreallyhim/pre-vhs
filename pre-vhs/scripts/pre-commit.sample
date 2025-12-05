@@ -1,0 +1,4 @@
+#!/bin/sh
+# pre-commit hook: runs lint-staged from the pre-vhs package
+
+npm --prefix "$(dirname "$0")/.." run lint-staged

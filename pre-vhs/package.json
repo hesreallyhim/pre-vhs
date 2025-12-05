@@ -13,7 +13,7 @@
     "format:fix": "prettier --write .",
     "prepare-release": "npm run lint && npm run test && npm run coverage",
     "lint-staged": "lint-staged",
-    "prepare": "husky"
+    "postinstall": "node scripts/install-hooks.js"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^2.0.0",
