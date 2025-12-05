@@ -1,4 +1,4 @@
-# pre-vhs
+![npm](https://img.shields.io/npm/v/pre-vhs)</sub>
 
 ![preview image](./pre-vhs-image-asset.png)
 
