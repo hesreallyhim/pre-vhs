@@ -1,6 +1,6 @@
 ![npm](https://img.shields.io/npm/v/pre-vhs)</sub>
 
-![preview image](./pre-vhs/docs/pre-vhs-image-asset.png)
+![preview image](./docs/pre-vhs-image-asset.png)
 
 A lightweight macro engine and DSL for writing VHS tapes faster, cleaner, and safer.
 
