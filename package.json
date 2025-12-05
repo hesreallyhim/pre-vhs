@@ -4,9 +4,18 @@
   "description": "An intuitive, highly configurable pre-processor for writing charmbracelet/vhs scripts with more complex command sequences in fewer words",
   "main": "src/index.js",
   "scripts": {
-    "test": "vitest --run"
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write ."
   },
   "devDependencies": {
+    "eslint": "^9.10.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.3.3",
     "vitest": "^2.0.0"
   },
   "repository": {
