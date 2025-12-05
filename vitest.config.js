@@ -13,6 +13,7 @@ export default defineConfig({
         "**/node_modules/**",
         "vitest.config.{js,ts}",
         "pre-vhs.config.{js,cjs,json}",
+        "__INTERNAL__/**",
       ],
     },
   },
