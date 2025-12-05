@@ -65,7 +65,7 @@ Or use stdin→stdout:
 
 ## Language Reference
 
-1. Meta-directives (> lines)
+## 1. Meta-directives (`>` lines)
 
 A directive line:
 
