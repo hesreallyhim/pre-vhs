@@ -45,7 +45,7 @@ module.exports = {
   packs: [
     // Example pack: typing styles (human, sloppy, etc.)
     {
-      module: "./packs/typingStyles.js",
+      module: "./src/packs/typingStyles.js",
       enabled: true,
       options: {
         defaultStyle: "human"
@@ -53,14 +53,14 @@ module.exports = {
     },
 
     // Example pack: basic git convenience macros
-    {
-      module: "./packs/gitBasics.js",
-      enabled: true
-    },
+    // {
+    //   module: "./src/packs/gitBasics.js",
+    //   enabled: true
+    // },
 
     // Example pack: emoji shortcuts
     {
-      module: "./packs/emojiShortcuts.js",
+      module: "./src/packs/emojiShortcuts.js",
       enabled: true
     },
 
