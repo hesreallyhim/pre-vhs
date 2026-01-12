@@ -3,38 +3,53 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { createEngine } from "../src/index.js";
-import builtinsPack from "../src/packs/builtins.js";
-import emojiPack from "../src/packs/emojiShortcuts.js";
+import { execFileSync } from "node:child_process";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 describe("golden: examples", () => {
-  const examplesDir = path.join(__dirname, "..", "examples");
+  const repoRoot = path.join(__dirname, "..");
+  const examplesDir = path.join(repoRoot, "examples");
+  const cliPath = path.join(repoRoot, "src", "index.js");
+  const configPath = path.join(
+    repoRoot,
+    "test",
+    "fixtures",
+    "pre-vhs.examples.config.js"
+  );
   const cases = fs
     .readdirSync(examplesDir, { withFileTypes: true })
     .filter((ent) => ent.isDirectory())
     .map((ent) => ent.name);
 
   for (const name of cases) {
-    it(`matches example ${name}`, () => {
+    it(`matches example ${name} (cli)`, () => {
       const dir = path.join(examplesDir, name);
-      const prePath = path.join(dir, "demo.tape.pre");
+      const baseName = path.join("examples", name, "demo");
       const expPath = path.join(dir, "demo.tape.expected");
+      const outPath = path.join(dir, "demo.tape");
 
-      const input = fs.readFileSync(prePath, "utf8");
-      const expected = fs.readFileSync(expPath, "utf8").trimEnd();
+      const hadOutput = fs.existsSync(outPath);
+      const originalOutput = hadOutput ? fs.readFileSync(outPath, "utf8") : null;
 
-      const engine = createEngine();
-      builtinsPack(engine);
-      emojiPack({
-        registerMacros: engine.registerMacros,
-        helpers: engine.helpers,
-      });
+      try {
+        execFileSync(process.execPath, [cliPath, "--config", configPath, baseName], {
+          cwd: repoRoot,
+          stdio: "pipe",
+        });
 
-      const actual = engine.processText(input).trimEnd();
-      expect(actual).toBe(expected);
+        const expected = fs.readFileSync(expPath, "utf8").trimEnd();
+        const actual = fs.readFileSync(outPath, "utf8").trimEnd();
+
+        expect(actual).toBe(expected);
+      } finally {
+        if (hadOutput) {
+          fs.writeFileSync(outPath, originalOutput, "utf8");
+        } else {
+          fs.rmSync(outPath, { force: true });
+        }
+      }
     });
   }
 });
