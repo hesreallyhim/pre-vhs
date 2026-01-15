@@ -1,0 +1,9 @@
+# Macro composition example
+# Demonstrates higher-order macros that call other macros
+
+ClearAndRest = Ctrl+L, Sleep 0.5s
+TypeAndRest = Type $1, Sleep 0.5s
+TypeAndClear = TypeAndRest $1, ClearAndRest
+
+> TypeAndClear $1
+hello
