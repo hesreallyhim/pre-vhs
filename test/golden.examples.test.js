@@ -16,7 +16,7 @@ describe("golden: examples", () => {
     repoRoot,
     "test",
     "fixtures",
-    "pre-vhs.examples.config.js"
+    "pre-vhs.examples.config.js",
   );
   const cases = fs
     .readdirSync(examplesDir, { withFileTypes: true })
@@ -31,13 +31,19 @@ describe("golden: examples", () => {
       const outPath = path.join(dir, "demo.tape");
 
       const hadOutput = fs.existsSync(outPath);
-      const originalOutput = hadOutput ? fs.readFileSync(outPath, "utf8") : null;
+      const originalOutput = hadOutput
+        ? fs.readFileSync(outPath, "utf8")
+        : null;
 
       try {
-        execFileSync(process.execPath, [cliPath, "--config", configPath, baseName], {
-          cwd: repoRoot,
-          stdio: "pipe",
-        });
+        execFileSync(
+          process.execPath,
+          [cliPath, "--config", configPath, baseName],
+          {
+            cwd: repoRoot,
+            stdio: "pipe",
+          },
+        );
 
         const expected = fs.readFileSync(expPath, "utf8").trimEnd();
         const actual = fs.readFileSync(outPath, "utf8").trimEnd();

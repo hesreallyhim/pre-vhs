@@ -66,7 +66,10 @@ function makeAliasMacro(name, bodyCmds) {
   return function aliasMacro(_payload, _rawCmd, args) {
     const out = [];
     for (const bodyCmd of bodyCmds) {
-      const expanded = bodyCmd.replace(/\$(\d+)/g, (_, n) => args[Number(n)] ?? "");
+      const expanded = bodyCmd.replace(
+        /\$(\d+)/g,
+        (_, n) => args[Number(n)] ?? "",
+      );
       out.push(expanded);
     }
     return out;
@@ -162,7 +165,9 @@ function createEngine(options = {}) {
     for (const [name, fn] of Object.entries(macros)) {
       if (typeof fn === "function") {
         if (warnOnMacroCollision && macroRegistry.has(name)) {
-          console.warn(`[pre-vhs] Duplicate macro registration for '${name}', last definition wins`);
+          console.warn(
+            `[pre-vhs] Duplicate macro registration for '${name}', last definition wins`,
+          );
         }
         macroRegistry.set(name, { fn, requireUse });
       }
@@ -189,7 +194,7 @@ function createEngine(options = {}) {
 
         // Strip simple matching quotes to avoid double-quoting.
         const stripped =
-          (/^".*"$/.test(remainder) || /^'.*'$/.test(remainder))
+          /^".*"$/.test(remainder) || /^'.*'$/.test(remainder)
             ? remainder.slice(1, -1)
             : remainder;
 
@@ -197,7 +202,7 @@ function createEngine(options = {}) {
         return [formatType(text)];
       },
     },
-    { requireUse: false }
+    { requireUse: false },
   );
 
   // -------------------------------------------------------------------------
@@ -298,7 +303,10 @@ function createEngine(options = {}) {
           .map((s) => s.trim())
           .filter(Boolean);
 
-        tokens = applyHeaderTransforms(tokens, { lineNo: logicalLineNo, headerText });
+        tokens = applyHeaderTransforms(tokens, {
+          lineNo: logicalLineNo,
+          headerText,
+        });
 
         // Argument detection
         let maxIdx = maxArgIndex(tokens);
@@ -347,11 +355,18 @@ function createEngine(options = {}) {
     // Local helpers (closure over state/out/useSet)
     // -------------------------------------------------------
 
-    function expandTokenRecursive(token, payload, args, useSetLocal, ctx, stack = []) {
+    function expandTokenRecursive(
+      token,
+      payload,
+      args,
+      useSetLocal,
+      ctx,
+      stack = [],
+    ) {
       if (state.expansionSteps >= MAX_EXPANSION_STEPS) {
         const chain = stack.length ? ` (stack: ${stack.join(" -> ")})` : "";
         throw new Error(
-          `Macro expansion exceeded ${MAX_EXPANSION_STEPS} steps around line ${ctx.lineNo}${chain}`
+          `Macro expansion exceeded ${MAX_EXPANSION_STEPS} steps around line ${ctx.lineNo}${chain}`,
         );
       }
       state.expansionSteps += 1;
@@ -377,18 +392,20 @@ function createEngine(options = {}) {
 
         if (stack.includes(base)) {
           throw new Error(
-            `Macro recursion detected: ${[...stack, base].join(" -> ")}`
+            `Macro recursion detected: ${[...stack, base].join(" -> ")}`,
           );
         }
         if (stack.length >= MAX_EXPANSION_DEPTH) {
           const chain = stack.length ? ` (stack: ${stack.join(" -> ")})` : "";
           throw new Error(
-            `Macro expansion depth exceeded ${MAX_EXPANSION_DEPTH} near line ${ctx.lineNo}${chain}`
+            `Macro expansion depth exceeded ${MAX_EXPANSION_DEPTH} near line ${ctx.lineNo}${chain}`,
           );
         }
 
         const remainderText = trimmed.replace(/^\S+\s*/, "").trim();
-        const payloadForCall = hadPlaceholders ? payload : (remainderText || payload || "");
+        const payloadForCall = hadPlaceholders
+          ? payload
+          : remainderText || payload || "";
         const effectiveArgs = Array.isArray(args) ? [...args] : [];
         if (remainderText && !hadPlaceholders) {
           effectiveArgs[1] = remainderText;
@@ -412,8 +429,8 @@ function createEngine(options = {}) {
               effectiveArgs,
               useSetLocal,
               ctx,
-              [...stack, base]
-            )
+              [...stack, base],
+            ),
           );
         }
       }

@@ -204,9 +204,10 @@ Lines: 18 plus the typing-style opt-in, with humanized typing automatically appl
 ---
 
 ### Takeaways
+
 - The raw tape is noisy and error-prone (32 lines of repeated Type/Enter/Sleep).
 - Basic pre-vhs cuts noise by ~40% by lifting payloads under directives.
 - Aliases + Gap remove most repetition; recursion bundles workflows into readable blocks.
 - Optional packs (typing styles) add polish without more boilerplate.
 
-You can mix and match: start with a simple directive style, then layer aliases and packs as needed. The final version is concise, intention-revealing, and easy to maintain.***
+You can mix and match: start with a simple directive style, then layer aliases and packs as needed. The final version is concise, intention-revealing, and easy to maintain.\*\*\*

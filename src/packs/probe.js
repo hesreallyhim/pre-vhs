@@ -38,9 +38,9 @@ module.exports = function probePack(engine) {
       : defaultSpawnSync;
 
   const defaultTimeoutMs =
-    (options && typeof options.defaultTimeoutMs === "number"
+    options && typeof options.defaultTimeoutMs === "number"
       ? options.defaultTimeoutMs
-      : 5000);
+      : 5000;
 
   // Last probe result is kept in module-local state
   let lastProbe = {

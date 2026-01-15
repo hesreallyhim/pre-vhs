@@ -16,10 +16,7 @@ describe("config: autoUse packs", () => {
 
     initPacksFromConfig(config, engine);
 
-    const input = [
-      "> BackspaceAll $1",
-      "hello",
-    ].join("\n");
+    const input = ["> BackspaceAll $1", "hello"].join("\n");
 
     const out = engine.processText(input).split("\n");
     expect(out).toEqual(["Backspace 5"]);

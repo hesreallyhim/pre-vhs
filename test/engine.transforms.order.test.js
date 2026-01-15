@@ -4,17 +4,10 @@ import { createEngine } from "../src/index.js";
 describe("engine: transform ordering", () => {
   it("applies header transforms in registration order", () => {
     const engine = createEngine();
-    engine.registerTransform("header", (cmds) =>
-      cmds.map((c) => `${c}-H1`)
-    );
-    engine.registerTransform("header", (cmds) =>
-      cmds.map((c) => `${c}-H2`)
-    );
+    engine.registerTransform("header", (cmds) => cmds.map((c) => `${c}-H1`));
+    engine.registerTransform("header", (cmds) => cmds.map((c) => `${c}-H2`));
 
-    const input = [
-      "> Type $1",
-      "hi",
-    ].join("\n");
+    const input = ["> Type $1", "hi"].join("\n");
 
     const out = engine.processText(input).split("\n");
     expect(out[0]).toContain("H1");

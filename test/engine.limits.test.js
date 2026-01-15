@@ -10,12 +10,10 @@ describe("engine: expansion limits", () => {
         B: () => ["C"],
         C: () => ["A"], // will cause cycle/depth exhaustion
       },
-      { requireUse: false }
+      { requireUse: false },
     );
 
-    const input = [
-      "> A",
-    ].join("\n");
+    const input = ["> A"].join("\n");
 
     expect(() => engine.processText(input)).toThrow(/line 1/);
     expect(() => engine.processText(input)).toThrow(/stack/);
@@ -31,12 +29,10 @@ describe("engine: expansion limits", () => {
         D: () => ["E"],
         E: () => ["done"],
       },
-      { requireUse: false }
+      { requireUse: false },
     );
 
-    const input = [
-      "> A",
-    ].join("\n");
+    const input = ["> A"].join("\n");
 
     expect(() => engine.processText(input)).toThrow(/steps/);
   });

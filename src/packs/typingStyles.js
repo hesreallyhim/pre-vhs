@@ -50,9 +50,7 @@ module.exports = function typingStylesPack(engine) {
   }
 
   function escapeDoubleQuoted(text) {
-    return String(text)
-      .replace(/\\/g, "\\\\")
-      .replace(/"/g, '\\"');
+    return String(text).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
   }
 
   function randomCharExcept(except) {

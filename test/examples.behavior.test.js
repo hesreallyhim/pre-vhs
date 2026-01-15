@@ -5,11 +5,9 @@ import builtinsPack from "../src/packs/builtins.js";
 describe("examples-style behaviors", () => {
   it("expands a simple alias macro", () => {
     const { processText } = createEngine();
-    const input = [
-      "TypeEnter = Type $1, Enter",
-      "> TypeEnter $1",
-      "hi",
-    ].join("\n");
+    const input = ["TypeEnter = Type $1, Enter", "> TypeEnter $1", "hi"].join(
+      "\n",
+    );
 
     const out = processText(input).split("\n");
     expect(out).toEqual([formatType("hi"), "Enter"]);
@@ -43,10 +41,7 @@ describe("examples-style behaviors", () => {
       return [line, "Screenshot screenshot.png"];
     });
 
-    const input = [
-      "> Type $1, Enter",
-      "echo hi",
-    ].join("\n");
+    const input = ["> Type $1, Enter", "echo hi"].join("\n");
 
     const out = engine.processText(input).split("\n");
     expect(out).toEqual([

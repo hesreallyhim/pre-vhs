@@ -35,9 +35,6 @@ describe.skip("header transforms: no cyclical expansion", () => {
 
     // Original header had a single 'Type' command;
     // doubler makes it two. We should see two identical Type lines.
-    expect(outputLines).toEqual([
-      'Type "hello"',
-      'Type "hello"',
-    ]);
+    expect(outputLines).toEqual(['Type "hello"', 'Type "hello"']);
   });
 });

@@ -14,16 +14,10 @@ Enter`;
 
   it("expands a simple Type directive with $1 and Enter", () => {
     const { processText } = createEngine();
-    const input = [
-      "> Type $1, Enter",
-      "echo hi",
-    ].join("\n");
+    const input = ["> Type $1, Enter", "echo hi"].join("\n");
 
     const output = processText(input).split("\n");
-    expect(output).toEqual([
-      formatType("echo hi"),
-      "Enter",
-    ]);
+    expect(output).toEqual([formatType("echo hi"), "Enter"]);
   });
 
   it("supports header aliases at top of file", () => {
@@ -36,16 +30,13 @@ Enter`;
     ].join("\n");
 
     const output = processText(input).split("\n");
-    expect(output).toEqual([
-      formatType("ls -la"),
-      "Enter",
-    ]);
+    expect(output).toEqual([formatType("ls -la"), "Enter"]);
   });
 
   it("supports multiple positional args $1, $2", () => {
     const { processText } = createEngine();
     const input = [
-      "> Type \"git commit -m '$1'\", Enter, Type \"# $2\", Enter",
+      '> Type "git commit -m \'$1\'", Enter, Type "# $2", Enter',
       "message",
       "note",
     ].join("\n");

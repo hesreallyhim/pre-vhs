@@ -4,7 +4,13 @@ const prettier = require("eslint-config-prettier");
 /** @type {import('eslint').Linter.FlatConfig[]} */
 module.exports = [
   {
-    ignores: ["node_modules/**", "coverage/**", "examples/**", "docs/**", "dist/**"],
+    ignores: [
+      "node_modules/**",
+      "coverage/**",
+      "examples/**",
+      "docs/**",
+      "dist/**",
+    ],
   },
   {
     files: ["**/*.js"],

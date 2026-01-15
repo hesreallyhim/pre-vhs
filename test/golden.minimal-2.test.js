@@ -9,7 +9,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 function readExample(relPath) {
-  return fs.readFileSync(path.join(__dirname, "..", "examples", "minimal-2", relPath), "utf8");
+  return fs.readFileSync(
+    path.join(__dirname, "..", "examples", "minimal-2", relPath),
+    "utf8",
+  );
 }
 
 describe("golden: minimal-2 demo", () => {
