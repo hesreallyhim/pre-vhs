@@ -586,47 +586,91 @@ function processText(input, options = {}) {
 // CLI
 // ---------------------------------------------------------------------------
 
+const USAGE = `Usage: pre-vhs [options] <input> <output>
+       pre-vhs [options] <basename>
+       cat file | pre-vhs [options]
+
+Options:
+  -c, --config <path>  Path to config file
+  -h, --help           Show this help message
+
+Examples:
+  pre-vhs input.tape.pre output.tape
+  pre-vhs demo                         # reads demo.tape.pre → writes demo.tape
+  cat file.tape.pre | pre-vhs > out.tape
+`;
+
 function parseArgs(argv) {
-  const args = { configPath: undefined, baseName: undefined };
+  const args = {
+    configPath: undefined,
+    inputPath: undefined,
+    outputPath: undefined,
+    help: false,
+  };
 
   const raw = argv.slice(2);
+  const positional = [];
   let i = 0;
   while (i < raw.length) {
     const tok = raw[i];
-    if (tok === "--config" || tok === "-c") {
+    if (tok === "--help" || tok === "-h") {
+      args.help = true;
+      i += 1;
+    } else if (tok === "--config" || tok === "-c") {
       args.configPath = raw[i + 1];
       i += 2;
-    } else if (!args.baseName) {
-      args.baseName = tok;
-      i += 1;
     } else {
+      positional.push(tok);
       i += 1;
     }
   }
+
+  if (positional.length === 2) {
+    // Explicit mode: input output
+    args.inputPath = positional[0];
+    args.outputPath = positional[1];
+  } else if (positional.length === 1) {
+    // Basename convenience mode
+    const base = positional[0];
+    args.inputPath = `${base}.tape.pre`;
+    args.outputPath = `${base}.tape`;
+  } else if (positional.length > 2) {
+    // Too many arguments
+    console.error(`Error: Too many arguments\n\n${USAGE}`);
+    process.exit(1);
+  }
+  // else: stdin/stdout mode (both undefined)
 
   return args;
 }
 
 if (require.main === module) {
   try {
-    const { configPath, baseName } = parseArgs(process.argv);
+    const { configPath, inputPath, outputPath, help } = parseArgs(process.argv);
+
+    if (help) {
+      console.log(USAGE);
+      process.exit(0);
+    }
+
     const config = loadConfig(configPath);
     const engine = createEngine();
     initPacksFromConfig(config, engine);
 
-    if (baseName) {
+    if (inputPath && outputPath) {
+      // File mode (explicit or basename)
       const cwd = process.cwd();
-      const inputPath = path.join(cwd, `${baseName}.tape.pre`);
-      const outputPath = path.join(cwd, `${baseName}.tape`);
+      const resolvedInput = path.resolve(cwd, inputPath);
+      const resolvedOutput = path.resolve(cwd, outputPath);
 
-      if (!fs.existsSync(inputPath)) {
-        console.error(`Input file not found: ${inputPath}`);
+      if (!fs.existsSync(resolvedInput)) {
+        console.error(`Input file not found: ${resolvedInput}`);
         process.exit(1);
       }
 
-      const input = fs.readFileSync(inputPath, "utf8");
+      const input = fs.readFileSync(resolvedInput, "utf8");
       const output = engine.processText(input);
-      fs.writeFileSync(outputPath, output, "utf8");
+      fs.writeFileSync(resolvedOutput, output, "utf8");
     } else {
       // stdin -> stdout mode
       const input = fs.readFileSync(0, "utf8");
