@@ -43,10 +43,15 @@ function baseCommandName(line) {
 
 /**
  * Compute max positional argument index referenced in a list of header tokens.
+ * Returns { max, hasStar } where hasStar indicates presence of $* (greedy arg).
  */
 function maxArgIndex(cmds) {
   let max = 0;
+  let hasStar = false;
   for (const cmd of cmds) {
+    if (/\$\*/.test(cmd)) {
+      hasStar = true;
+    }
     const matches = String(cmd).match(/\$(\d+)/g);
     if (!matches) continue;
     for (const m of matches) {
@@ -54,26 +59,37 @@ function maxArgIndex(cmds) {
       if (Number.isFinite(n) && n > max) max = n;
     }
   }
-  return max;
+  return { max, hasStar };
 }
 
 /**
  * Given an alias name and its body command list, build a macro function
- * that substitutes $1, $2, ... using the call-site args and returns
+ * that substitutes $1, $2, ..., and $* using the call-site args and returns
  * a list of header tokens (which themselves will be expanded as usual).
+ *
+ * The returned function has a `hasStar` property indicating whether the
+ * alias body contains $* (greedy multi-line argument).
  */
 function makeAliasMacro(name, bodyCmds) {
-  return function aliasMacro(_payload, _rawCmd, args) {
+  // Check if any body command uses $*
+  const hasStar = bodyCmds.some((cmd) => /\$\*/.test(cmd));
+
+  function aliasMacro(_payload, _rawCmd, args) {
     const out = [];
     for (const bodyCmd of bodyCmds) {
-      const expanded = bodyCmd.replace(
-        /\$(\d+)/g,
-        (_, n) => args[Number(n)] ?? "",
-      );
+      // First substitute $* with the greedy multi-line argument
+      let expanded = bodyCmd.replace(/\$\*/g, () => args["*"] ?? "");
+      // Then substitute $1, $2, etc.
+      expanded = expanded.replace(/\$(\d+)/g, (_, n) => args[Number(n)] ?? "");
       out.push(expanded);
     }
     return out;
-  };
+  }
+
+  // Attach metadata for $* detection
+  aliasMacro.hasStar = hasStar;
+
+  return aliasMacro;
 }
 
 /**
@@ -270,10 +286,16 @@ function createEngine(options = {}) {
   // -------------------------------------------------------------------------
 
   function substituteArgs(str, args) {
-    return String(str).replace(/\$(\d+)/g, (_m, n) => {
+    // Replace $* with the greedy multi-line argument
+    let result = String(str).replace(/\$\*/g, () => {
+      return args["*"] != null ? args["*"] : "";
+    });
+    // Replace $1, $2, etc. with positional arguments
+    result = result.replace(/\$(\d+)/g, (_m, n) => {
       const idx = Number(n);
       return args[idx] != null ? args[idx] : "";
     });
+    return result;
   }
 
   function processText(input) {
@@ -309,21 +331,54 @@ function createEngine(options = {}) {
         });
 
         // Argument detection
-        let maxIdx = maxArgIndex(tokens);
+        const { max: maxIdx, hasStar: hasStaticStar } = maxArgIndex(tokens);
+
+        // Also check if any token is a macro that uses $*
+        const hasMacroStar = tokens.some((tok) => {
+          const name = tok.trim().split(/\s+/)[0]; // Get macro name (before any args)
+          const entry = macroRegistry.get(name);
+          return entry?.fn?.hasStar === true;
+        });
+        const hasStar = hasStaticStar || hasMacroStar;
+
         const hasBareType =
           maxIdx === 0 &&
+          !hasStar &&
           tokens.some((c) => {
             const t = c.trim();
             return t === "Type";
           });
-        if (hasBareType) maxIdx = 1;
+        const effectiveMaxIdx = hasBareType ? 1 : maxIdx;
 
         const args = [];
-        for (let k = 1; k <= maxIdx; k++) {
+
+        // First consume positional args $1, $2, etc.
+        for (let k = 1; k <= effectiveMaxIdx; k++) {
           i += 1;
           args[k] = bodyLines[i] ?? "";
         }
-        const payload = args[1] || "";
+
+        if (hasStar) {
+          // $* consumes all remaining non-blank lines as a single argument
+          const starLines = [];
+          while (i + 1 < bodyLines.length) {
+            const nextLine = bodyLines[i + 1];
+            if (nextLine.trim() === "") {
+              // Skip the blank line terminator so it doesn't get passed through
+              i += 1;
+              break;
+            }
+            starLines.push(nextLine);
+            i += 1;
+          }
+          args["*"] = starLines.join("\n");
+          // Also populate $1 with the star content if no positional args were used
+          if (effectiveMaxIdx < 1 && args[1] === undefined) {
+            args[1] = args["*"];
+          }
+        }
+
+        const payload = args[1] || args["*"] || "";
 
         // Expand each token
         for (let idxTok = 0; idxTok < tokens.length; idxTok++) {
@@ -372,7 +427,7 @@ function createEngine(options = {}) {
       state.expansionSteps += 1;
 
       const results = [];
-      const hadPlaceholders = /\$(\d+)/.test(token);
+      const hadPlaceholders = /\$(\d+)/.test(token) || /\$\*/.test(token);
       const withArgs = substituteArgs(token, args);
       const preTokens = applyPreExpandTransforms(withArgs, ctx);
 
@@ -407,6 +462,10 @@ function createEngine(options = {}) {
           ? payload
           : remainderText || payload || "";
         const effectiveArgs = Array.isArray(args) ? [...args] : [];
+        // Preserve the $* property if it exists
+        if (args && args["*"] !== undefined) {
+          effectiveArgs["*"] = args["*"];
+        }
         if (remainderText && !hadPlaceholders) {
           effectiveArgs[1] = remainderText;
         }
@@ -468,6 +527,8 @@ function createEngine(options = {}) {
 
 /**
  * Load config from explicit path or default pre-vhs.config.* in CWD.
+ * Returns { config, configDir } where configDir is the directory containing
+ * the config file (used for resolving relative pack paths).
  */
 function loadConfig(configPathFromArg) {
   const cwd = process.cwd();
@@ -494,7 +555,7 @@ function loadConfig(configPathFromArg) {
   }
 
   if (!finalPath) {
-    return { packs: [] };
+    return { config: { packs: [] }, configDir: cwd };
   }
 
   let cfg = require(finalPath);
@@ -505,7 +566,7 @@ function loadConfig(configPathFromArg) {
   if (!cfg || typeof cfg !== "object") cfg = {};
   if (!Array.isArray(cfg.packs)) cfg.packs = [];
 
-  return cfg;
+  return { config: cfg, configDir: path.dirname(finalPath) };
 }
 
 /**
@@ -519,9 +580,13 @@ function loadConfig(configPathFromArg) {
  *   - registerTransform (phase-based)
  *   - helpers: { formatType, baseCommandName }
  *   - options: whatever is in packConfig.options
+ *
+ * @param {object} config - The config object containing packs array
+ * @param {object} engine - The pre-vhs engine instance
+ * @param {string} [configDir] - Directory containing config file (for resolving relative paths)
  */
-function initPacksFromConfig(config, engine) {
-  const cwd = process.cwd();
+function initPacksFromConfig(config, engine, configDir) {
+  const baseDir = configDir || process.cwd();
   const packs = config.packs || [];
 
   const engineBase = {
@@ -548,7 +613,7 @@ function initPacksFromConfig(config, engine) {
     if (!enabled || !moduleId) continue;
 
     const resolved = moduleId.startsWith(".")
-      ? path.resolve(cwd, moduleId)
+      ? path.resolve(baseDir, moduleId)
       : moduleId;
 
     const packFactory = require(resolved);
@@ -573,11 +638,17 @@ function initPacksFromConfig(config, engine) {
 /**
  * Convenience wrapper: create a fresh engine, init packs from config (if any),
  * and process input text in a single call.
+ *
+ * @param {string} input - The input text to process
+ * @param {object} [options] - Processing options
+ * @param {object} [options.config] - Config object with packs array
+ * @param {string} [options.configDir] - Directory for resolving relative pack paths
+ * @param {object} [options.engineOptions] - Options to pass to createEngine
  */
 function processText(input, options = {}) {
   const engine = createEngine(options.engineOptions);
   if (options.config) {
-    initPacksFromConfig(options.config, engine);
+    initPacksFromConfig(options.config, engine, options.configDir);
   }
   return engine.processText(input);
 }
@@ -653,9 +724,9 @@ if (require.main === module) {
       process.exit(0);
     }
 
-    const config = loadConfig(configPath);
+    const { config, configDir } = loadConfig(configPath);
     const engine = createEngine();
-    initPacksFromConfig(config, engine);
+    initPacksFromConfig(config, engine, configDir);
 
     if (inputPath && outputPath) {
       // File mode (explicit or basename)

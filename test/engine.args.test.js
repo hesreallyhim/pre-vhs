@@ -19,3 +19,81 @@ describe("engine: argument handling edge cases", () => {
     expect(out[0]).toBe(formatType('"inline" payload'));
   });
 });
+
+describe("engine: $* greedy multi-line argument", () => {
+  it("$* consumes all lines until blank line", () => {
+    const { processText } = createEngine();
+    const input = [
+      "TypeBlock = Type $*",
+      "",
+      "> TypeBlock",
+      "line one",
+      "line two",
+      "line three",
+      "",
+      "# this should not be included",
+    ].join("\n");
+
+    const out = processText(input);
+    expect(out).toBe(
+      [formatType("line one\nline two\nline three"), "# this should not be included"].join(
+        "\n",
+      ),
+    );
+  });
+
+  it("$* works with alias expansion", () => {
+    const { processText } = createEngine();
+    const input = [
+      "MultiType = Type $*",
+      "",
+      "> MultiType",
+      "first line",
+      "second line",
+    ].join("\n");
+
+    const out = processText(input).trim();
+    expect(out).toBe(formatType("first one\nsecond line").replace("first one", "first line"));
+  });
+
+  it("$* can be combined with other positional args", () => {
+    const { processText } = createEngine();
+    const input = [
+      "EchoAndType = Type $1, Type $*",
+      "",
+      "> EchoAndType $1",
+      "prefix",
+      "multi",
+      "line",
+      "content",
+    ].join("\n");
+
+    const out = processText(input);
+    // Output should be two Type commands: first with $1, second with $* (multi-line)
+    expect(out).toBe(
+      formatType("prefix") + "\n" + formatType("multi\nline\ncontent"),
+    );
+  });
+
+  it("$* returns empty string when no lines follow", () => {
+    const { processText } = createEngine();
+    const input = ["EmptyBlock = Type $*", "", "> EmptyBlock", ""].join("\n");
+
+    const out = processText(input).trim();
+    expect(out).toBe(formatType(""));
+  });
+
+  it("$* stops at end of file if no blank line", () => {
+    const { processText } = createEngine();
+    const input = [
+      "TypeAll = Type $*",
+      "",
+      "> TypeAll",
+      "only line one",
+      "only line two",
+    ].join("\n");
+
+    const out = processText(input).trim();
+    expect(out).toBe(formatType("only line one\nonly line two"));
+  });
+});

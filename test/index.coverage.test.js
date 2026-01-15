@@ -142,8 +142,8 @@ describe("index.js config helpers", () => {
       const prev = process.cwd();
       process.chdir(dir);
       try {
-        const cfg = loadConfig();
-        expect(cfg.packs).toEqual([]);
+        const { config } = loadConfig();
+        expect(config.packs).toEqual([]);
       } finally {
         process.chdir(prev);
       }
@@ -159,15 +159,16 @@ describe("index.js config helpers", () => {
         "utf8",
       );
 
-      const cfg = loadConfig(configPath);
-      expect(cfg.packs).toEqual(["alpha"]);
+      const { config, configDir } = loadConfig(configPath);
+      expect(config.packs).toEqual(["alpha"]);
+      expect(configDir).toBe(dir);
       clearRequireCache(configPath);
     });
   });
 
   it("reads default configs from cwd", () => {
-    const cfg = loadConfig();
-    expect(Array.isArray(cfg.packs)).toBe(true);
+    const { config } = loadConfig();
+    expect(Array.isArray(config.packs)).toBe(true);
   });
 
   it("supports default exports and non-object configs", () => {
@@ -178,13 +179,13 @@ describe("index.js config helpers", () => {
         "module.exports = { default: { packs: ['beta'] } };",
         "utf8",
       );
-      const cfgDefault = loadConfig(defaultPath);
+      const { config: cfgDefault } = loadConfig(defaultPath);
       expect(cfgDefault.packs).toEqual(["beta"]);
       clearRequireCache(defaultPath);
 
       const badPath = path.join(dir, "bad.config.js");
       fs.writeFileSync(badPath, "module.exports = 'nope';", "utf8");
-      const cfgBad = loadConfig(badPath);
+      const { config: cfgBad } = loadConfig(badPath);
       expect(cfgBad.packs).toEqual([]);
       clearRequireCache(badPath);
     });

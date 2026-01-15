@@ -43,6 +43,12 @@ module.exports = {
    * (The engine does not auto-activate pack macros.)
    */
   packs: [
+    // Builtins: BackspaceAll, BackspaceAllButOne, ClearLine, TypeEnter, Gap
+    {
+      module: "./src/packs/builtins.js",
+      enabled: true,
+    },
+
     // Example pack: typing styles (human, sloppy, etc.)
     {
       module: "./src/packs/typingStyles.js",
