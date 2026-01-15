@@ -55,11 +55,21 @@ echo "bye"
 
 ## 3. Build the tape
 
-`npx pre-vhs demo # reads demo.tape.pre → writes demo.tape`
+```bash
+npx pre-vhs demo.tape.pre demo.tape
+```
 
-Or use stdin→stdout:
+Or use the basename shorthand:
 
-`cat demo.tape.pre | npx pre-vhs > demo.tape`
+```bash
+npx pre-vhs demo   # reads demo.tape.pre → writes demo.tape
+```
+
+Or pipe stdin→stdout:
+
+```bash
+cat demo.tape.pre | npx pre-vhs > demo.tape
+```
 
 ---
 
@@ -287,9 +297,24 @@ echo
 
 ## CLI Options
 
-pre-vhs <basename> # reads <basename>.tape.pre, outputs <basename>.tape
-pre-vhs --config path
-cat file | pre-vhs # stdin → stdout mode
+```text
+Usage: pre-vhs [options] <input> <output>
+       pre-vhs [options] <basename>
+       cat file | pre-vhs [options]
+
+Options:
+  -c, --config <path>  Path to config file
+  -h, --help           Show this help message
+```
+
+Examples:
+
+```bash
+pre-vhs input.tape.pre output.tape   # explicit input/output paths
+pre-vhs demo                          # convenience: reads demo.tape.pre → writes demo.tape
+cat file.tape.pre | pre-vhs > out.tape
+pre-vhs --config custom.config.js input.pre output.tape
+```
 
 ---
 
