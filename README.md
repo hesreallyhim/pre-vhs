@@ -75,6 +75,23 @@ cat demo.tape.pre | npx pre-vhs > demo.tape
 
 ## Language Reference
 
+A `.tape.pre` file has two sections: **header** and **body**, separated by a blank line.
+
+- **Header**: `Use` statements and alias definitions (optional)
+- **Body**: Directives (`>` lines) and raw VHS commands
+
+```text
+Use BackspaceAll Gap        ← header
+TypeEnter = Type $1, Enter  ← header
+
+> TypeEnter $1              ← body (blank line above separates)
+echo "hello"
+```
+
+No strict enforcement—the parser is lenient. But following this structure keeps files readable.
+
+---
+
 ## 1. Meta-directives (`>` lines)
 
 A directive line:
@@ -118,9 +135,58 @@ echo "second"
 
 ---
 
-## 3. Header Aliases
+## 3. Multi-line Arguments ($*)
 
-Aliases only appear at the top of the file before the first non-header line.
+Use `$*` to consume all remaining non-blank lines as a single argument, joined with newlines:
+
+```text
+TypeBlock = Type $*
+
+> TypeBlock
+This is a long sentence with
+multiple line breaks, it's
+arbitrarily long...
+
+# Next command starts here (blank line terminates $*)
+```
+
+Produces:
+
+```text
+Type `This is a long sentence with
+multiple line breaks, it's
+arbitrarily long...`
+# Next command starts here (blank line terminates $*)
+```
+
+### Combining $* with positional args
+
+You can use both `$1`, `$2`, etc. and `$*` in the same macro. Positional args are consumed first, then `$*` gets the rest:
+
+```text
+PrefixAndBlock = Type $1, Type $*
+
+> PrefixAndBlock $1
+prefix text
+line one
+line two
+line three
+```
+
+Produces:
+
+```text
+Type `prefix text`
+Type `line one
+line two
+line three`
+```
+
+---
+
+## 4. Header Aliases
+
+Aliases are defined at the top of the file before the first non-header line.
 
 ```text
 TypeEnter = Type $1, Enter
@@ -141,7 +207,7 @@ Aliases expand just like directives. They may reference built-ins or other alias
 
 ---
 
-## 4. Built-ins & `Use`
+## 5. Built-ins & `Use`
 
 Only `Type` is always available for correct escaping. All other helpers are opt-in via packs + `Use ...`.
 
@@ -160,7 +226,7 @@ Use BackspaceAll BackspaceAllButOne Gap
 
 ---
 
-## 5. Typing Styles (optional pack)
+## 6. Typing Styles (optional pack)
 
 If you enable the typing-styles pack in pre-vhs.config.js:
 
@@ -192,7 +258,7 @@ Sloppy style injects occasional mistakes and corrections for realism.
 
 ---
 
-## 6. Transforms & Phases (advanced)
+## 7. Transforms & Phases (advanced)
 
 Packs can hook into multiple phases:
 
@@ -228,7 +294,7 @@ Typing styles use the same mechanism.
 
 ---
 
-## 7. Recursive Macros (advanced)
+## 8. Recursive Macros (advanced)
 
 Macros can expand into other macro calls; the engine recurses with guards
 (depth/step limits and cycle detection). This makes layered helpers like:
@@ -243,7 +309,7 @@ work as expected without manual “with-gap” variants.
 
 ---
 
-## 8. Importing Packs (Project-wide)
+## 9. Importing Packs (Project-wide)
 
 Optional packs may be enabled globally with a configuration file.
 
@@ -336,6 +402,7 @@ The test suite consists of:
 - Tiny DSL: aliases and Use, not a programming language
 - Composable: chain packs, transforms, macros
 - Zero overhead: output is plain VHS
+- Permissive: unknown syntax passes through to VHS; missing args default to empty string
 
 ---
 
@@ -346,3 +413,35 @@ The test suite consists of:
 - Examples gallery / cookbook
 - VS Code syntax highlighting for .tape.pre
 - Playground website
+
+---
+
+## Appendix: Error Handling
+
+pre-vhs follows a **"fail fast on guardrails, lenient everywhere else"** philosophy.
+
+### Strict (throws immediately)
+
+| Scenario | Why |
+|----------|-----|
+| Macro recursion (`A → B → A`) | Prevents infinite loops |
+| Expansion depth exceeded (default 32) | Guards against blowup |
+| Expansion steps exceeded (default 10,000) | Guards against blowup |
+| Missing config file (when explicitly specified) | User error |
+| Missing input file | User error |
+
+### Lenient (silent degradation)
+
+| Scenario | Behavior |
+|----------|----------|
+| Missing `$1`, `$2`, etc. | Defaults to empty string |
+| Invalid header syntax | Treated as body line |
+| Unknown macro name | Passed through to VHS |
+| Duplicate macro registration | Last wins (warns by default) |
+
+### Rationale
+
+- **Preprocessor philosophy**: incomplete files should produce reasonable output
+- **VHS compatibility**: unknown syntax passes through unchanged
+- **Trust pack authors**: no deep validation of registered macros
+- **Clear fatal errors**: recursion/depth errors include line numbers and stack traces

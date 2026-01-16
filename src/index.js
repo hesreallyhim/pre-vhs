@@ -15,6 +15,61 @@ const fs = require("fs");
 const path = require("path");
 
 // ---------------------------------------------------------------------------
+// Known VHS commands (for collision warnings)
+// ---------------------------------------------------------------------------
+
+const VHS_COMMANDS = new Set([
+  "Output",
+  "Require",
+  "Set",
+  "Sleep",
+  "Type",
+  "Keys",
+  "Backspace",
+  "Delete",
+  "Insert",
+  "Ctrl",
+  "Alt",
+  "Shift",
+  "Enter",
+  "Escape",
+  "Up",
+  "Down",
+  "Left",
+  "Right",
+  "Tab",
+  "Space",
+  "PageUp",
+  "PageDown",
+  "Home",
+  "End",
+  "CapsLock",
+  "ScrollLock",
+  "NumLock",
+  "PrintScreen",
+  "Pause",
+  "F1",
+  "F2",
+  "F3",
+  "F4",
+  "F5",
+  "F6",
+  "F7",
+  "F8",
+  "F9",
+  "F10",
+  "F11",
+  "F12",
+  "Screenshot",
+  "Copy",
+  "Paste",
+  "Hide",
+  "Show",
+  "Source",
+  "Env",
+]);
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -93,19 +148,43 @@ function makeAliasMacro(name, bodyCmds) {
 }
 
 /**
+ * Report a header validation issue based on the validation mode.
+ * @param {"off"|"warn"|"error"} mode - Validation mode
+ * @param {number} lineNo - 1-based line number
+ * @param {string} message - Error/warning message
+ * @param {string} line - The offending line content
+ */
+function reportHeaderIssue(mode, lineNo, message, line) {
+  if (mode === "off") return;
+
+  const fullMessage = `[pre-vhs] Header line ${lineNo}: ${message}\n  → ${line}`;
+
+  if (mode === "error") {
+    throw new Error(fullMessage);
+  }
+  // mode === "warn"
+  console.warn(fullMessage);
+}
+
+/**
  * Parse a file header at the top of the .tape.pre:
  * - Skips blank lines and comments (#..., //...).
  * - `Use ...` lines collect macro names to activate.
  * - Alias lines: Name = Cmd1, Cmd2, ...
  * - Stops at the first line that is not blank/comment/alias/Use.
+ *
+ * @param {string[]} lines - All lines of the file
+ * @param {"off"|"warn"|"error"} headerValidation - Validation mode (default: "warn")
  */
-function parseFileHeader(lines) {
+function parseFileHeader(lines, headerValidation = "warn") {
   const macrosFromHeader = {};
   const useNames = [];
   let bodyStart = lines.length;
+  let hasHeaderContent = false; // Track if we've seen any real header content
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+    const lineNo = i + 1; // 1-based for user-facing messages
 
     // Blank lines
     if (/^\s*$/.test(line)) continue;
@@ -113,30 +192,80 @@ function parseFileHeader(lines) {
     // Comments
     if (/^\s*#/.test(line) || /^\s*\/\//.test(line)) continue;
 
+    // Check for directive syntax in header (probably a mistake)
+    // Only warn if we've already seen real header content (Use or alias)
+    if (/^\s*>/.test(line)) {
+      if (hasHeaderContent) {
+        reportHeaderIssue(
+          headerValidation,
+          lineNo,
+          "Directive syntax '>' found in header (should be in body after blank line)",
+          line,
+        );
+      }
+      bodyStart = i;
+      break;
+    }
+
     // Use statements: Use Foo Bar Baz
-    const useMatch = line.match(/^\s*Use\s+(.+)$/);
-    if (useMatch) {
-      const names = useMatch[1]
+    const useMatch = line.match(/^\s*Use\s*(.*)$/);
+    if (useMatch !== null && /^\s*Use\b/.test(line)) {
+      const args = (useMatch[1] || "").trim();
+      if (!args) {
+        reportHeaderIssue(
+          headerValidation,
+          lineNo,
+          "'Use' requires at least one macro name",
+          line,
+        );
+        continue;
+      }
+      const names = args
         .split(/\s+/)
         .map((s) => s.trim())
         .filter(Boolean);
       useNames.push(...names);
+      hasHeaderContent = true;
       continue;
     }
 
     // Alias lines: Name = Cmd1, Cmd2, ...
-    const m = line.match(/^\s*([A-Za-z_]\w*)\s*=\s*(.+)$/);
-    if (m) {
-      const name = m[1];
-      const rhs = m[2];
+    const aliasMatch = line.match(/^\s*([A-Za-z_]\w*)\s*=\s*(.+)$/);
+    if (aliasMatch) {
+      const name = aliasMatch[1];
+      const rhs = aliasMatch[2];
 
       const bodyCmds = rhs
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean);
 
+      if (bodyCmds.length === 0) {
+        reportHeaderIssue(
+          headerValidation,
+          lineNo,
+          "Alias has empty body (expected: Name = Cmd1, Cmd2, ...)",
+          line,
+        );
+        continue;
+      }
+
       macrosFromHeader[name] = makeAliasMacro(name, bodyCmds);
+      hasHeaderContent = true;
       continue;
+    }
+
+    // Check for malformed alias (has = but didn't match the pattern)
+    if (line.includes("=")) {
+      reportHeaderIssue(
+        headerValidation,
+        lineNo,
+        "Malformed alias definition (expected: Name = Cmd1, Cmd2, ...)",
+        line,
+      );
+      // Still treat as end of header to preserve existing behavior
+      bodyStart = i;
+      break;
     }
 
     // Anything else: header ends here
@@ -162,6 +291,9 @@ function createEngine(options = {}) {
   const warnOnMacroCollision =
     options.warnOnMacroCollision === false ? false : true;
 
+  // Header validation: "off" | "warn" | "error" (default: "off")
+  const headerValidation = options.headerValidation || "off";
+
   // transforms per phase
   const transforms = {
     header: [],
@@ -178,11 +310,17 @@ function createEngine(options = {}) {
   function registerMacros(macros, macroOptions = {}) {
     if (!macros || typeof macros !== "object") return;
     const requireUse = macroOptions.requireUse !== false; // default true
+    const warnVhsCollision = macroOptions.warnVhsCollision === true; // default false
     for (const [name, fn] of Object.entries(macros)) {
       if (typeof fn === "function") {
         if (warnOnMacroCollision && macroRegistry.has(name)) {
           console.warn(
             `[pre-vhs] Duplicate macro registration for '${name}', last definition wins`,
+          );
+        }
+        if (warnVhsCollision && VHS_COMMANDS.has(name)) {
+          console.warn(
+            `[pre-vhs] WARNING: Collision detected between custom macro '${name}' and VHS command`,
           );
         }
         macroRegistry.set(name, { fn, requireUse });
@@ -301,10 +439,10 @@ function createEngine(options = {}) {
   function processText(input) {
     const allLines = String(input).split(/\r?\n/);
     const { macrosFromHeader, useNames, bodyLines, bodyStartIndex } =
-      parseFileHeader(allLines);
+      parseFileHeader(allLines, headerValidation);
 
     const useSet = new Set(useNames);
-    registerMacros(macrosFromHeader, { requireUse: false });
+    registerMacros(macrosFromHeader, { requireUse: false, warnVhsCollision: true });
 
     const out = [];
     const state = {
