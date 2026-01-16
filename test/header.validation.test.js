@@ -95,6 +95,8 @@ describe("header validation", () => {
   it("throws on alias with empty body in error mode", () => {
     const { processText } = createEngine({ headerValidation: "error" });
 
-    expect(() => processText("Foo = \n\n> Type $1\nhello")).toThrow(/empty body/i);
+    expect(() => processText("Foo = \n\n> Type $1\nhello")).toThrow(
+      /empty body/i,
+    );
   });
 });

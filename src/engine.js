@@ -115,7 +115,10 @@ function createEngine(options = {}) {
       parseFileHeader(allLines, headerValidation);
 
     const useSet = new Set(useNames);
-    registerMacros(macrosFromHeader, { requireUse: false, warnVhsCollision: true });
+    registerMacros(macrosFromHeader, {
+      requireUse: false,
+      warnVhsCollision: true,
+    });
 
     const output = [];
     const state = { lastEmittedBase: "", expansionSteps: 0 };
@@ -136,7 +139,15 @@ function createEngine(options = {}) {
       const lineNo = bodyStartIndex + i + 1;
 
       if (/^\s*>\s*/.test(line)) {
-        i = processDirectiveLine(line, lineNo, bodyLines, i, useSet, output, state);
+        i = processDirectiveLine(
+          line,
+          lineNo,
+          bodyLines,
+          i,
+          useSet,
+          output,
+          state,
+        );
       } else {
         emitWithPostTransforms([line], { lineNo }, output, state);
       }
@@ -144,19 +155,42 @@ function createEngine(options = {}) {
     }
   }
 
-  function processDirectiveLine(line, lineNo, bodyLines, currentIndex, useSet, output, state) {
+  function processDirectiveLine(
+    line,
+    lineNo,
+    bodyLines,
+    currentIndex,
+    useSet,
+    output,
+    state,
+  ) {
     const headerText = line.replace(/^\s*>\s*/, "");
-    let tokens = headerText.split(",").map((s) => s.trim()).filter(Boolean);
+    let tokens = headerText
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
 
     tokens = pipeline.applyHeaderTransforms(tokens, { lineNo, headerText });
 
     const { effectiveMaxIdx, hasStar } = analyzeArguments(tokens);
     const { args, newIndex } = consumeArguments(
-      bodyLines, currentIndex, effectiveMaxIdx, hasStar,
+      bodyLines,
+      currentIndex,
+      effectiveMaxIdx,
+      hasStar,
     );
 
     const payload = args[1] || args["*"] || "";
-    expandAndEmitTokens(tokens, payload, args, useSet, lineNo, headerText, output, state);
+    expandAndEmitTokens(
+      tokens,
+      payload,
+      args,
+      useSet,
+      lineNo,
+      headerText,
+      output,
+      state,
+    );
 
     return newIndex;
   }
@@ -171,7 +205,8 @@ function createEngine(options = {}) {
     });
 
     const hasStar = hasStaticStar || hasMacroStar;
-    const hasBareType = maxIdx === 0 && !hasStar && tokens.some((c) => c.trim() === "Type");
+    const hasBareType =
+      maxIdx === 0 && !hasStar && tokens.some((c) => c.trim() === "Type");
     const effectiveMaxIdx = hasBareType ? 1 : maxIdx;
 
     return { effectiveMaxIdx, hasStar };
@@ -206,10 +241,27 @@ function createEngine(options = {}) {
     return { args, newIndex: i };
   }
 
-  function expandAndEmitTokens(tokens, payload, args, useSet, lineNo, headerText, output, state) {
+  function expandAndEmitTokens(
+    tokens,
+    payload,
+    args,
+    useSet,
+    lineNo,
+    headerText,
+    output,
+    state,
+  ) {
     for (let idx = 0; idx < tokens.length; idx++) {
       const ctx = { lineNo, headerText, tokenIndex: idx };
-      const expanded = expandTokenRecursive(tokens[idx], payload, args, useSet, ctx, [], state);
+      const expanded = expandTokenRecursive(
+        tokens[idx],
+        payload,
+        args,
+        useSet,
+        ctx,
+        [],
+        state,
+      );
       emitWithPostTransforms(expanded, ctx, output, state);
     }
   }
@@ -218,7 +270,15 @@ function createEngine(options = {}) {
   // Token expansion
   // -------------------------------------------------------------------------
 
-  function expandTokenRecursive(token, payload, args, useSet, ctx, stack, state) {
+  function expandTokenRecursive(
+    token,
+    payload,
+    args,
+    useSet,
+    ctx,
+    stack,
+    state,
+  ) {
     checkExpansionLimits(state, stack, ctx);
     state.expansionSteps += 1;
 
@@ -230,7 +290,18 @@ function createEngine(options = {}) {
     for (const tok of preTokens) {
       const trimmed = tok.trim();
       if (!trimmed) continue;
-      results.push(...expandSingleToken(trimmed, payload, args, useSet, ctx, stack, state, hadPlaceholders));
+      results.push(
+        ...expandSingleToken(
+          trimmed,
+          payload,
+          args,
+          useSet,
+          ctx,
+          stack,
+          state,
+          hadPlaceholders,
+        ),
+      );
     }
 
     return results;
@@ -245,7 +316,16 @@ function createEngine(options = {}) {
     }
   }
 
-  function expandSingleToken(trimmed, payload, args, useSet, ctx, stack, state, hadPlaceholders) {
+  function expandSingleToken(
+    trimmed,
+    payload,
+    args,
+    useSet,
+    ctx,
+    stack,
+    state,
+    hadPlaceholders,
+  ) {
     const base = baseCommandName(trimmed);
     const entry = macroRegistry.get(base);
     const isActive = entry && (entry.requireUse === false || useSet.has(base));
@@ -256,15 +336,31 @@ function createEngine(options = {}) {
 
     validateRecursion(base, stack, ctx);
 
-    const { payloadForCall, effectiveArgs } = prepareCallArgs(trimmed, payload, args, hadPlaceholders);
+    const { payloadForCall, effectiveArgs } = prepareCallArgs(
+      trimmed,
+      payload,
+      args,
+      hadPlaceholders,
+    );
     const macroResult = entry.fn(payloadForCall, trimmed, effectiveArgs, ctx);
 
-    return expandMacroResult(macroResult, base, payloadForCall, effectiveArgs, useSet, ctx, stack, state);
+    return expandMacroResult(
+      macroResult,
+      base,
+      payloadForCall,
+      effectiveArgs,
+      useSet,
+      ctx,
+      stack,
+      state,
+    );
   }
 
   function validateRecursion(base, stack, ctx) {
     if (stack.includes(base)) {
-      throw new Error(`Macro recursion detected: ${[...stack, base].join(" -> ")}`);
+      throw new Error(
+        `Macro recursion detected: ${[...stack, base].join(" -> ")}`,
+      );
     }
     if (stack.length >= MAX_EXPANSION_DEPTH) {
       const chain = ` (stack: ${stack.join(" -> ")})`;
@@ -276,7 +372,9 @@ function createEngine(options = {}) {
 
   function prepareCallArgs(trimmed, payload, args, hadPlaceholders) {
     const remainderText = trimmed.replace(/^\S+\s*/, "").trim();
-    const payloadForCall = hadPlaceholders ? payload : remainderText || payload || "";
+    const payloadForCall = hadPlaceholders
+      ? payload
+      : remainderText || payload || "";
 
     const effectiveArgs = Array.isArray(args) ? [...args] : [];
     if (args && args["*"] !== undefined) {
@@ -289,7 +387,16 @@ function createEngine(options = {}) {
     return { payloadForCall, effectiveArgs };
   }
 
-  function expandMacroResult(result, base, payload, args, useSet, ctx, stack, state) {
+  function expandMacroResult(
+    result,
+    base,
+    payload,
+    args,
+    useSet,
+    ctx,
+    stack,
+    state,
+  ) {
     const arr = Array.isArray(result) ? result : [];
     const expanded = [];
 
@@ -300,7 +407,15 @@ function createEngine(options = {}) {
         continue;
       }
       expanded.push(
-        ...expandTokenRecursive(child, payload, args, useSet, ctx, [...stack, base], state),
+        ...expandTokenRecursive(
+          child,
+          payload,
+          args,
+          useSet,
+          ctx,
+          [...stack, base],
+          state,
+        ),
       );
     }
 

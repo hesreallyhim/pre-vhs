@@ -44,16 +44,18 @@ describe("reportHeaderIssue", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     // Should not throw and not warn
-    expect(() => reportHeaderIssue("off", 1, "test message", "test line")).not.toThrow();
+    expect(() =>
+      reportHeaderIssue("off", 1, "test message", "test line"),
+    ).not.toThrow();
     expect(warnSpy).not.toHaveBeenCalled();
 
     warnSpy.mockRestore();
   });
 
   it("throws when mode is error", () => {
-    expect(() => reportHeaderIssue("error", 5, "Bad syntax", "line content")).toThrow(
-      /\[pre-vhs\] Header line 5: Bad syntax/
-    );
+    expect(() =>
+      reportHeaderIssue("error", 5, "Bad syntax", "line content"),
+    ).toThrow(/\[pre-vhs\] Header line 5: Bad syntax/);
   });
 
   it("warns when mode is warn", () => {
@@ -62,7 +64,7 @@ describe("reportHeaderIssue", () => {
     reportHeaderIssue("warn", 10, "Warning message", "some line");
 
     expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining("[pre-vhs] Header line 10: Warning message")
+      expect.stringContaining("[pre-vhs] Header line 10: Warning message"),
     );
 
     warnSpy.mockRestore();

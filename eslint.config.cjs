@@ -1,15 +1,19 @@
-// eslint flat config (CommonJS)
 const prettier = require("eslint-config-prettier");
 
-/** @type {import('eslint').Linter.FlatConfig[]} */
+/** @type {import('eslint').Linter.Config[]} */
 module.exports = [
   {
     ignores: [
       "node_modules/**",
+      "package-lock.json",
       "coverage/**",
       "examples/**",
       "docs/**",
       "dist/**",
+      "CLAUDE.md",
+      ".claude/**",
+      "LICENSE",
+      "AGENTS.md",
     ],
   },
   {
@@ -26,7 +30,6 @@ module.exports = [
       "no-console": "off",
     },
   },
-  // prettier as a flat config: minimal form to disable formatting rules
   {
     name: "prettier-overrides",
     rules: prettier.rules,

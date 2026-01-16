@@ -1,2 +1,8 @@
 .claude
 .github/workflows/**
+*.tape
+examples/**
+CLAUDE.md
+AGENTS.md
+LICENSE
+package-lock.json

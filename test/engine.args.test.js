@@ -36,9 +36,10 @@ describe("engine: $* greedy multi-line argument", () => {
 
     const out = processText(input);
     expect(out).toBe(
-      [formatType("line one\nline two\nline three"), "# this should not be included"].join(
-        "\n",
-      ),
+      [
+        formatType("line one\nline two\nline three"),
+        "# this should not be included",
+      ].join("\n"),
     );
   });
 
@@ -53,7 +54,9 @@ describe("engine: $* greedy multi-line argument", () => {
     ].join("\n");
 
     const out = processText(input).trim();
-    expect(out).toBe(formatType("first one\nsecond line").replace("first one", "first line"));
+    expect(out).toBe(
+      formatType("first one\nsecond line").replace("first one", "first line"),
+    );
   });
 
   it("$* can be combined with other positional args", () => {

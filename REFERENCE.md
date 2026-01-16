@@ -42,6 +42,7 @@ Enter
 ```
 
 **Expansion model (quick reference):**
+
 - `$n` substitution happens before macro lookup.
 - Inline args vs payload: if a header token has explicit text after the macro name, that text is treated as the payload; otherwise the payload comes from the consumed lines (`$1` etc.).
 - Macro outputs are treated as final VHS unless they name another macro; recursion is allowed with guards (depth/step limits, cycle detection).
@@ -61,7 +62,7 @@ echo "second"
 
 ---
 
-## 3. Multi-line Arguments ($*)
+## 3. Multi-line Arguments ($\*)
 
 Use `$*` to consume all remaining non-blank lines as a single argument, joined with newlines:
 
@@ -85,7 +86,7 @@ arbitrarily long...`
 # Next command starts here (blank line terminates $*)
 ```
 
-### Combining $* with positional args
+### Combining $\* with positional args
 
 You can use both `$1`, `$2`, etc. and `$*` in the same macro. Positional args are consumed first, then `$*` gets the rest:
 
@@ -139,13 +140,13 @@ Only `Type` is always available for correct escaping. All other helpers are opt-
 
 **Available macros (from builtins pack):**
 
-| Macro | Description |
-|-------|-------------|
-| `BackspaceAll` | Deletes entire payload text |
-| `BackspaceAllButOne` | Deletes payload except last char |
-| `Gap` | Inserts a timed Sleep between commands |
-| `TypeEnter` | Types payload + Enter |
-| `ClearLine` | Removes text + newline |
+| Macro                | Description                            |
+| -------------------- | -------------------------------------- |
+| `BackspaceAll`       | Deletes entire payload text            |
+| `BackspaceAllButOne` | Deletes payload except last char       |
+| `Gap`                | Inserts a timed Sleep between commands |
+| `TypeEnter`          | Types payload + Enter                  |
+| `ClearLine`          | Removes text + newline                 |
 
 To activate:
 
@@ -351,21 +352,21 @@ pre-vhs follows a **"fail fast on guardrails, lenient everywhere else"** philoso
 
 ### Strict (throws immediately)
 
-| Scenario | Why |
-|----------|-----|
-| Macro recursion (`A → B → A`) | Prevents infinite loops |
-| Expansion depth exceeded (default 32) | Guards against blowup |
-| Expansion steps exceeded (default 10,000) | Guards against blowup |
-| Missing config file (when explicitly specified) | User error |
-| Missing input file | User error |
+| Scenario                                        | Why                     |
+| ----------------------------------------------- | ----------------------- |
+| Macro recursion (`A → B → A`)                   | Prevents infinite loops |
+| Expansion depth exceeded (default 32)           | Guards against blowup   |
+| Expansion steps exceeded (default 10,000)       | Guards against blowup   |
+| Missing config file (when explicitly specified) | User error              |
+| Missing input file                              | User error              |
 
 ### Lenient (silent degradation)
 
-| Scenario | Behavior |
-|----------|----------|
-| Missing `$1`, `$2`, etc. | Defaults to empty string |
-| Invalid header syntax | Treated as body line |
-| Unknown macro name | Passed through to VHS |
+| Scenario                     | Behavior                     |
+| ---------------------------- | ---------------------------- |
+| Missing `$1`, `$2`, etc.     | Defaults to empty string     |
+| Invalid header syntax        | Treated as body line         |
+| Unknown macro name           | Passed through to VHS        |
 | Duplicate macro registration | Last wins (warns by default) |
 
 ### Rationale

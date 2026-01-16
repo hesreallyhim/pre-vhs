@@ -26,6 +26,9 @@
     "prettier": "^3.8.0",
     "vitest": "^4.0.17"
   },
+  "engines": {
+    "node": "22"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hesreallyhim/pre-vhs.git"

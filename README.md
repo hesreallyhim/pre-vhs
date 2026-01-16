@@ -29,11 +29,11 @@ pre-vhs demo.tape.pre demo.tape   # convert .tape.pre → .tape
 
 **INSTEAD OF THIS**
 
-```sh           
-Type "pwd"          
-Sleep 1s            
-Enter              
-Sleep 1s           
+```sh
+Type "pwd"
+Sleep 1s
+Enter
+Sleep 1s
 ```
 
 **DO THIS:**
@@ -107,7 +107,6 @@ echo "Hello There!"
 - **Typing styles** — "human-style" typing with natural pacing variations between keystrokes
 - **BackspaceAll** — automatically determines how many characters to delete
 - **Probe** — enables conditional VHS sequences based on runtime conditions
-
 
 ## Motivation
 
