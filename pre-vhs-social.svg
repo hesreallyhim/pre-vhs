@@ -37,9 +37,17 @@
       <stop offset="100%" style="stop-color:#f0abfc"/>
     </linearGradient>
 
-    <!-- Simple shadow - no blur on text -->
+    <!-- Simple shadow for terminal cards -->
     <filter id="boxShadow" x="-10%" y="-10%" width="120%" height="130%">
-      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.3"/>
+      <feDropShadow dx="0" dy="12" stdDeviation="8" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+
+    <!-- Text shadows for title/subtitles -->
+    <filter id="titleShadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="12" stdDeviation="3" flood-color="#120f0c" flood-opacity="0.45"/>
+    </filter>
+    <filter id="subtitleShadow" x="-25%" y="-25%" width="150%" height="170%">
+      <feDropShadow dx="0" dy="10" stdDeviation="3.5" flood-color="#120f0c" flood-opacity="0.95"/>
     </filter>
   </defs>
 
@@ -47,73 +55,74 @@
   <rect width="1280" height="640" fill="url(#bgGradient)"/>
 
   <!-- LEFT: Source (.tape.pre) -->
-  <g filter="url(#boxShadow)">
-    <rect x="80" y="45" width="460" height="270" rx="12" ry="12" fill="url(#sourceTermGradient)"/>
+  <g>
+    <rect x="60" y="40" width="500" height="300" rx="14" ry="14" fill="url(#sourceTermGradient)" filter="url(#boxShadow)"/>
 
     <!-- Header bar -->
-    <rect x="80" y="45" width="460" height="36" rx="12" ry="12" fill="url(#sourceHeaderGradient)"/>
-    <rect x="80" y="69" width="460" height="12" fill="url(#sourceHeaderGradient)"/>
+    <rect x="60" y="40" width="500" height="40" rx="14" ry="14" fill="url(#sourceHeaderGradient)"/>
+    <rect x="60" y="68" width="500" height="12" fill="url(#sourceHeaderGradient)"/>
 
     <!-- Traffic lights -->
-    <circle cx="104" cy="63" r="7" fill="#f38ba8"/>
-    <circle cx="126" cy="63" r="7" fill="#fab387"/>
-    <circle cx="148" cy="63" r="7" fill="#a6e3a1"/>
+    <circle cx="86" cy="60" r="8" fill="#f38ba8"/>
+    <circle cx="112" cy="60" r="8" fill="#fab387"/>
+    <circle cx="138" cy="60" r="8" fill="#a6e3a1"/>
 
     <!-- Filename - BIGGER -->
-    <text x="310" y="68" font-family="SF Mono, Monaco, Consolas, monospace" font-size="14" font-weight="500" fill="#d6d3d1" text-anchor="middle">demo.tape.pre</text>
+    <text x="310" y="68" font-family="SF Mono, Monaco, Consolas, monospace" font-size="18" font-weight="500" fill="#d6d3d1" text-anchor="middle">demo.tape.pre</text>
 
     <!-- Macro names - BIGGER -->
-    <g font-family="SF Mono, Monaco, Consolas, monospace" font-size="22" font-weight="500">
-      <text x="108" y="125" fill="#fbbf24">GreetUser</text>
-      <text x="108" y="165" fill="#fbbf24">ShowNewFeature</text>
-      <text x="108" y="205" fill="#fbbf24">RunDemo</text>
-      <text x="108" y="245" fill="#fbbf24">WrapUp</text>
+    <g font-family="SF Mono, Monaco, Consolas, monospace" font-size="30" font-weight="500">
+      <text x="100" y="145" fill="#fbbf24">GreetUser</text>
+      <text x="100" y="190" fill="#fbbf24">ShowNewFeature</text>
+      <text x="100" y="235" fill="#fbbf24">RunDemo</text>
+      <text x="100" y="280" fill="#fbbf24">WrapUp</text>
     </g>
 
     <!-- Label - BIGGER -->
-    <text x="516" y="298" font-family="Inter, -apple-system, sans-serif" font-size="14" font-weight="500" fill="#a8a29e" text-anchor="end">you write this</text>
+    <!-- <text x="550" y="328" font-family="Inter, -apple-system, sans-serif" font-size="18" font-weight="500" fill="#a8a29e" text-anchor="end">you write this</text> -->
   </g>
 
   <!-- Arrow - NO GLOW, just solid -->
-  <g transform="translate(597, 175)">
-    <path d="M0 0 L60 0 L60 -12 L90 5 L60 22 L60 10 L0 10 Z" fill="url(#arrowGradient)"/>
+  <g transform="translate(580, 185)">
+    <path d="M0 0 L80 0 L80 -16 L120 6 L80 28 L80 12 L0 12 Z" fill="url(#arrowGradient)"/>
     <!-- Arrow label - BIGGER, NO FILTER -->
-    <text x="45" y="-18" font-family="Inter, -apple-system, sans-serif" font-size="16" font-weight="700" fill="white" text-anchor="middle">pre-vhs</text>
+    <text x="60" y="-24" font-family="Inter, -apple-system, sans-serif" font-size="36" font-weight="700" fill="white" text-anchor="middle">pre-vhs</text>
   </g>
 
-  <!-- RIGHT: Output (demo.gif) -->
-  <g filter="url(#boxShadow)">
-    <rect x="740" y="45" width="460" height="270" rx="12" ry="12" fill="url(#outputTermGradient)"/>
+  <!-- RIGHT: Output (demo) -->
+  <g>
+    <rect x="720" y="40" width="500" height="300" rx="14" ry="14" fill="url(#outputTermGradient)" filter="url(#boxShadow)"/>
 
     <!-- Header bar -->
-    <rect x="740" y="45" width="460" height="36" rx="12" ry="12" fill="url(#outputHeaderGradient)"/>
-    <rect x="740" y="69" width="460" height="12" fill="url(#outputHeaderGradient)"/>
+    <rect x="720" y="40" width="500" height="40" rx="14" ry="14" fill="url(#outputHeaderGradient)"/>
+    <rect x="720" y="68" width="500" height="12" fill="url(#outputHeaderGradient)"/>
 
     <!-- Traffic lights -->
-    <circle cx="764" cy="63" r="7" fill="#f38ba8"/>
-    <circle cx="786" cy="63" r="7" fill="#fab387"/>
-    <circle cx="808" cy="63" r="7" fill="#a6e3a1"/>
+    <circle cx="746" cy="60" r="8" fill="#f38ba8"/>
+    <circle cx="772" cy="60" r="8" fill="#fab387"/>
+    <circle cx="798" cy="60" r="8" fill="#a6e3a1"/>
 
     <!-- Label - BIGGER -->
-    <text x="970" y="68" font-family="SF Mono, Monaco, Consolas, monospace" font-size="14" font-weight="500" fill="#5eead4" text-anchor="middle">demo.gif</text>
+    <text x="970" y="68" font-family="SF Mono, Monaco, Consolas, monospace" font-size="18" font-weight="500" fill="#5eead4" text-anchor="middle">demo</text>
 
     <!-- Output text - BIGGER -->
-    <g font-family="SF Mono, Monaco, Consolas, monospace" font-size="20" font-weight="400">
-      <text x="768" y="125" fill="#67e8f9">Hey! Welcome to the demo.</text>
-      <text x="768" y="165" fill="#e2e8f0">This is a great new feature</text>
-      <text x="768" y="200" fill="#e2e8f0">I want to show you.</text>
-      <text x="768" y="250" fill="#a5b4fc">Try it out →</text>
-      <text x="918" y="250" fill="#fbbf24">npm i pre-vhs</text>
+    <g font-family="SF Mono, Monaco, Consolas, monospace" font-size="28" font-weight="400">
+      <text x="760" y="140" fill="#67e8f9"> > Hey! Welcome to the demo.</text>
+      <text x="760" y="180" fill="#e2e8f0"> > I have a new feature</text>
+      <text x="760" y="225" fill="#e2e8f0"> > I want to show you.</text>
+      <text x="760" y="270" fill="#a5b4fc"> > Try it out:</text>
+      <!-- <text x="980" y="270" fill="#fbbf24"> npm i pre-vhs</text> -->
+      <text x="820" y="310" fill="#fbbf24" font-size="32"> npm i pre-vhs</text>
     </g>
 
     <!-- Cursor -->
-    <rect x="768" y="275" width="12" height="4" fill="#67e8f9"/>
+    <!-- <rect x="760" y="295" width="14" height="5" fill="#67e8f9"/> -->
   </g>
 
   <!-- Logo - LARGE, CRISP, NO EFFECTS -->
   <g>
-    <text x="640" y="435" font-family="Inter, SF Pro Display, -apple-system, sans-serif" font-size="100" font-weight="800" fill="white" text-anchor="middle" letter-spacing="-3">pre-vhs</text>
-    <text x="640" y="500" font-family="Inter, SF Pro Display, -apple-system, sans-serif" font-size="32" font-weight="500" fill="white" text-anchor="middle">a preprocessor for VHS tapes</text>
-    <text x="640" y="545" font-family="Inter, SF Pro Display, -apple-system, sans-serif" font-size="32" font-weight="500" fill="white" text-anchor="middle" font-style="italic">More magic — fewer words</text>
+    <text x="640" y="440" font-family="Inter, SF Pro Display, -apple-system, sans-serif" font-size="120" font-weight="1000" fill="#fff1c7" stroke="#1f1b16" stroke-width="1.4" paint-order="stroke fill" text-anchor="middle" letter-spacing="-1" filter="url(#titleShadow)">pre-vhs</text>
+    <text x="640" y="520" font-family="Inter, SF Pro Display, -apple-system, sans-serif" font-size="40" font-weight="500" fill="#ffffff" stroke="#1c1712" stroke-width="1.2" paint-order="stroke fill" text-anchor="middle" filter="url(#subtitleShadow)">a preprocessor for VHS tapes</text>
+    <text x="640" y="585" font-family="Inter, SF Pro Display, -apple-system, sans-serif" font-size="40" font-weight="500" fill="#ffffff" stroke="#1c1712" stroke-width="1.2" paint-order="stroke fill" text-anchor="middle" font-style="italic" filter="url(#subtitleShadow)">more magic — fewer words</text>
   </g>
 </svg>

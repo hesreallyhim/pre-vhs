@@ -1,11 +1,11 @@
+![preview image](./pre-vhs-social.png)
+
 ![npm](https://img.shields.io/npm/v/pre-vhs)
 ![CI](https://github.com/hesreallyhim/pre-vhs/actions/workflows/ci.yml/badge.svg)
 ![coverage](https://img.shields.io/badge/coverage-97%25-brightgreen)
 ![license](https://img.shields.io/npm/l/pre-vhs)
 ![node](https://img.shields.io/node/v/pre-vhs)
 ![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)
-
-![preview image](./pre-vhs-image-asset.png)
 
 A lightweight, adaptable Node.js preprocessor and macro engine for writing [@charmbracelet/VHS](https://github.com/charmbracelet/vhs) tapes with more complexity in fewer characters.
 
