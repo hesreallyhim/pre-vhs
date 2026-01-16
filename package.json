@@ -6,6 +6,14 @@
   "bin": {
     "pre-vhs": "src/index.js"
   },
+  "files": [
+    "src",
+    "pre-vhs.config.js",
+    "README.md",
+    "REFERENCE.md",
+    "LICENSE",
+    "SECURITY.md"
+  ],
   "scripts": {
     "test": "vitest --run",
     "test:watch": "vitest",

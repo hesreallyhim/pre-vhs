@@ -58,12 +58,6 @@ module.exports = {
       },
     },
 
-    // Example pack: basic git convenience macros
-    // {
-    //   module: "./src/packs/gitBasics.js",
-    //   enabled: true
-    // },
-
     // Example pack: emoji shortcuts
     {
       module: "./src/packs/emojiShortcuts.js",
