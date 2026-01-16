@@ -45,6 +45,7 @@ Enter
 - `$n` substitution happens before macro lookup.
 - Inline args vs payload: if a header token has explicit text after the macro name, that text is treated as the payload; otherwise the payload comes from the consumed lines (`$1` etc.).
 - Macro outputs are treated as final VHS unless they name another macro; recursion is allowed with guards (depth/step limits, cycle detection).
+- All tokens on a directive share the same args—`$1` always refers to the first line consumed by that directive, regardless of which macro uses it.
 
 ---
 
