@@ -1,10 +1,10 @@
-![npm](https://img.shields.io/npm/v/pre-vhs)</sub>
+![npm](https://img.shields.io/npm/v/pre-vhs)
 
 ![preview image](./pre-vhs-image-asset.png)
 
-A lightweight, adaptable preprocessor and macro engine for writing @charmbracelet/VHS tapes with more complexity in fewer characters.
+A lightweight, adaptable Node.js preprocessor and macro engine for writing [@charmbracelet/VHS](https://github.com/charmbracelet/vhs) tapes with more complexity in fewer characters.
 
-`pre-vsh` exposes a set of extensible syntactic conventions that you can easily adapt to your own workflow, potentially turning dozens of lines of repitious VHS commands into a small handful of pre-defined (or user-defined) macros.
+`pre-vhs` exposes a set of extensible syntactic conventions that you can easily adapt to your own workflow, potentially turning dozens of lines of repetitious VHS commands into a small handful of pre-defined (or user-defined) macros.
 
 Additionally, `pre-vhs` unlocks functionality that is border-line unfeasible in the VHS syntax, such as advanced typing styles, and branching command sequences (conditionals). And what you get at the end is a perfectly valid VHS `.tape`.
 
@@ -12,14 +12,19 @@ Additionally, `pre-vhs` unlocks functionality that is border-line unfeasible in 
 
 ## How to Get Started
 
-> [!INFO]
+```sh
+npm i -g pre-vhs                  # install globally
+pre-vhs demo.tape.pre demo.tape   # convert .tape.pre → .tape
+```
+
+> [!NOTE]
 > For installation and setup instructions, see the [quickstart](#quickstart) below.
 
-1. Take any sequence of commands and inline them for better readabiliity.
+1. Take any sequence of commands and inline them for better readability.
 
 **INSTEAD OF THIS**
 
-```shell           
+```sh           
 Type "pwd"          
 Sleep 1s            
 Enter              
@@ -28,7 +33,7 @@ Sleep 1s
 
 **DO THIS:**
 
-```shell
+```sh
 > Type $1, Sleep 1s, Enter, Sleep 1s # ">" is the pre-vhs directive
 pwd
 ```
@@ -37,7 +42,7 @@ pwd
 
 **INSTEAD OF THIS**
 
-```shell
+```sh
 Type "Hello there!"
 Sleep 2s
 Ctrl+U
@@ -46,7 +51,7 @@ Sleep 1s
 
 **DO THIS**
 
-```shell
+```sh
 TypeSleepErase = Type $1, Sleep 2, Ctrl+U, Sleep 1s # Define a macro
 
 > TypeSleepErase $1 # Invoke it using the directive
@@ -59,7 +64,7 @@ Hello There!
 
 **INSTEAD OF THIS**
 
-```shell
+```sh
 Type "echo 'Hello There!'"
 Sleep 2s
 Enter
@@ -72,7 +77,7 @@ Sleep 1s
 
 **DO THIS**
 
-```shell
+```sh
 RunWithSleep = Type $1, Sleep 2s, Enter, Sleep 1s
 TypeAndScreenshot = Type $1, Sleep 0.5s, Screenshot, Sleep 1s
 
@@ -82,7 +87,8 @@ Let's take a screenshot!
 ```
 
 **OR THIS**
-```
+
+```sh
 ...
 RunTypeAndScreenshot = RunWithSleep $1, TypeAndScreenshot $2
 
@@ -93,11 +99,11 @@ Let's take a screenshot!
 
 ## Packs
 
-`pre-vhs` also ships with some powerful configuration "packs" that provide out-of-the box functionality such as:
+`pre-vhs` also ships with powerful "packs" that provide out-of-the-box functionality:
 
-- Different typing styles: "human-style" typing with small pacing changes between words
-- `BackspaceAll` - Automatically determines the correct number of characters to delete preceding sentence.
-- a special `Probe` command that enables _conditional vhs sequences_ depending on runtime conditions.
+- **Typing styles** — "human-style" typing with natural pacing variations between keystrokes
+- **BackspaceAll** — automatically determines how many characters to delete
+- **Probe** — enables conditional VHS sequences based on runtime conditions
 
 
 ## Motivation
@@ -110,26 +116,21 @@ For a complete reference guide, including advanced configuration instructions, s
 
 ## Quickstart
 
-1. Install
+**1. Install**
 
 ```sh
-npm install -D pre-vhs
+npm i -g pre-vhs    # global
+npm i -D pre-vhs    # or as dev dependency
 ```
 
-(or for `npx`, see below.)
-
-2. Write a `.tape.pre`
-
-### header
+**2. Write a `.tape.pre` file**
 
 ```sh
+# header
 Use BackspaceAll Gap
 TypeEnter = Type $1, Enter
-```
 
-### body
-
-```sh
+# body
 > Gap 200ms
 > Type $1, Enter
 echo "hello"
@@ -138,26 +139,26 @@ echo "hello"
 echo "bye"
 ```
 
-## 3. Build the tape
+**3. Build the tape**
 
 ```sh
-npx pre-vhs demo.tape.pre demo.tape
+pre-vhs demo.tape.pre demo.tape
 ```
 
 Or use the basename shorthand:
 
 ```sh
-npx pre-vhs demo   # reads demo.tape.pre → writes demo.tape
+pre-vhs demo   # reads demo.tape.pre → writes demo.tape
 ```
 
 Or pipe stdin→stdout:
 
 ```sh
-cat demo.tape.pre | npx pre-vhs > demo.tape
+cat demo.tape.pre | pre-vhs > demo.tape
 ```
 
 ---
 
-[LICENSE](LICENSE.md)]
+[LICENSE](LICENSE.md)
 
 2026 © Really Him
