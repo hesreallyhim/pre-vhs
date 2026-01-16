@@ -1,0 +1,58 @@
+/**
+ * Known VHS commands (for collision warnings).
+ *
+ * This set contains all standard VHS commands that the pre-vhs engine
+ * should be aware of to warn users about potential macro name collisions.
+ */
+const VHS_COMMANDS = new Set([
+  "Output",
+  "Require",
+  "Set",
+  "Sleep",
+  "Type",
+  "Keys",
+  "Backspace",
+  "Delete",
+  "Insert",
+  "Ctrl",
+  "Alt",
+  "Shift",
+  "Enter",
+  "Escape",
+  "Up",
+  "Down",
+  "Left",
+  "Right",
+  "Tab",
+  "Space",
+  "PageUp",
+  "PageDown",
+  "Home",
+  "End",
+  "CapsLock",
+  "ScrollLock",
+  "NumLock",
+  "PrintScreen",
+  "Pause",
+  "F1",
+  "F2",
+  "F3",
+  "F4",
+  "F5",
+  "F6",
+  "F7",
+  "F8",
+  "F9",
+  "F10",
+  "F11",
+  "F12",
+  "Screenshot",
+  "Copy",
+  "Paste",
+  "Hide",
+  "Show",
+  "Source",
+  "Env",
+]);
+
+module.exports = { VHS_COMMANDS };
