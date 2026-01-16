@@ -39,12 +39,12 @@ produces:
 ```text
 Type "ls -la"
 Enter
-
-Expansion model (quick reference):
-- `$n` substitution happens before macro lookup.
-- Inline args vs payload: if a header token has explicit text after the macro name, that text is treated as the payload; otherwise the payload comes from the consumed lines ($1 etc.).
-- Macro outputs are treated as final VHS unless they name another macro; recursion is allowed with guards (depth/step limits, cycle detection).
 ```
+
+**Expansion model (quick reference):**
+- `$n` substitution happens before macro lookup.
+- Inline args vs payload: if a header token has explicit text after the macro name, that text is treated as the payload; otherwise the payload comes from the consumed lines (`$1` etc.).
+- Macro outputs are treated as final VHS unless they name another macro; recursion is allowed with guards (depth/step limits, cycle detection).
 
 ---
 
@@ -136,30 +136,33 @@ Aliases expand just like directives. They may reference built-ins or other alias
 
 Only `Type` is always available for correct escaping. All other helpers are opt-in via packs + `Use ...`.
 
-Examples:
+**Available macros (from builtins pack):**
 
-Macro Description
-BackspaceAll Deletes entire payload text
-BackspaceAllButOne Deletes payload except last char
-Gap Inserts a timed Sleep between commands
-TypeEnter (example alias pack) types payload + Enter
-ClearLine (example alias) remove text + newline
+| Macro | Description |
+|-------|-------------|
+| `BackspaceAll` | Deletes entire payload text |
+| `BackspaceAllButOne` | Deletes payload except last char |
+| `Gap` | Inserts a timed Sleep between commands |
+| `TypeEnter` | Types payload + Enter |
+| `ClearLine` | Removes text + newline |
 
 To activate:
 
+```text
 Use BackspaceAll BackspaceAllButOne Gap
+```
 
 ---
 
 ## 6. Typing Styles (optional pack)
 
-If you enable the typing-styles pack in pre-vhs.config.js:
+If you enable the typing-styles pack in `pre-vhs.config.js`:
 
+```js
 module.exports = {
-packs: [
-"./packs/typingStyles.js"
-]
+  packs: ["./packs/typingStyles.js"],
 };
+```
 
 …you can write:
 
@@ -243,8 +246,8 @@ pre-vhs.config.js:
 ```js
 module.exports = {
   packs: [
+    "./packs/builtins.js",
     "./packs/typingStyles.js",
-    "./packs/gitBasics.js",
     "./packs/emojiShortcuts.js",
   ],
 };
@@ -256,14 +259,14 @@ These behave like Vim plugins: they provide macros, but the user still chooses w
 
 ## Examples
 
-Example: Git demo
+### Git demo
 
+```text
 Use Gap BackspaceAll
 
 GitInit = Type "git init -q", Enter, Sleep 200ms
 GitStatus = Type "git status", Enter
 
-```text
 > GitInit
 
 > Type $1, Enter
@@ -274,11 +277,11 @@ git add .
 
 ---
 
-## Example: Complex one-liner
-
-Use BackspaceAll Gap
+### Complex one-liner
 
 ```text
+Use BackspaceAll Gap
+
 > Type $1, Sleep 200ms, Type $2, Enter, Gap 400ms, Type "Done", Enter
 echo
 "hello"
@@ -313,10 +316,10 @@ pre-vhs --config custom.config.js input.pre output.tape
 
 The test suite consists of:
 
-- Golden file tests: .tape.pre → expected .tape
+- Golden file tests: `.tape.pre` → expected `.tape`
 - Unit tests: header parsing, alias resolution, built-ins, error reporting
-- Pack tests: typing styles, git, emoji shortcuts
-- Lint/format hooks: `npm run lint`, `npm run format`, pre-commit runs lint-staged
+- Pack tests: typing styles, emoji shortcuts, probe
+- Lint/format hooks: `npm run lint`, `npm run format`
 
 ---
 
