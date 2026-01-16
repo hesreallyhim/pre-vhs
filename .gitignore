@@ -5,4 +5,6 @@ coverage/
 *.log
 .eslintcache
 .npmrc
+examples/**/demo.tape
+docs/*.tape
 skills/
