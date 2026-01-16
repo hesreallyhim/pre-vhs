@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { createEngine } from "../src/index.js";
+import { createEngine, formatType } from "../src/index.js";
 
-describe.skip("header transforms: no cyclical expansion", () => {
+describe("header transforms: no cyclical expansion", () => {
   it("applies a doubler transform exactly once per header", () => {
     const engine = createEngine();
     const { registerTransform, processText } = engine;
@@ -35,6 +35,9 @@ describe.skip("header transforms: no cyclical expansion", () => {
 
     // Original header had a single 'Type' command;
     // doubler makes it two. We should see two identical Type lines.
-    expect(outputLines).toEqual(['Type "hello"', 'Type "hello"']);
+    expect(outputLines).toEqual([
+      formatType("hello [double]"),
+      formatType("hello [double]"),
+    ]);
   });
 });

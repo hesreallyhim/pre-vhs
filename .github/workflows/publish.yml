@@ -40,4 +40,4 @@ jobs:
           generate_release_notes: true
 
     permissions:
-      contents: read
+      contents: write
