@@ -52,7 +52,7 @@ Sleep 1s
 **DO THIS**
 
 ```sh
-TypeSleepErase = Type $1, Sleep 2, Ctrl+U, Sleep 1s # Define a macro
+TypeSleepErase = Type $1, Sleep 2s, Ctrl+U, Sleep 1s # Define a macro
 
 > TypeSleepErase $1 # Invoke it using the directive
 Hello There!
@@ -69,7 +69,6 @@ Type "echo 'Hello There!'"
 Sleep 2s
 Enter
 Sleep 1s
-Type "Let's take a screenshot!"
 Sleep 0.5s
 Screenshot
 Sleep 1s
@@ -79,22 +78,21 @@ Sleep 1s
 
 ```sh
 RunWithSleep = Type $1, Sleep 2s, Enter, Sleep 1s
-TypeAndScreenshot = Type $1, Sleep 0.5s, Screenshot, Sleep 1s
+TakeScreenshot = Sleep 0.5s, Screenshot, Sleep 1s
 
-> RunWithSleep $1, TypeAndScreenshot $2
+> RunWithSleep $1, TakeScreenshot
 echo "Hello There!"
-Let's take a screenshot!
 ```
 
 **OR THIS**
 
 ```sh
-...
-RunTypeAndScreenshot = RunWithSleep $1, TypeAndScreenshot $2
+RunWithSleep = Type $1, Sleep 2s, Enter, Sleep 1s
+TakeScreenshot = Sleep 0.5s, Screenshot, Sleep 1s
+RunAndScreenshot = RunWithSleep $1, TakeScreenshot
 
-> RunTypeAndScreenshot
+> RunAndScreenshot $1
 echo "Hello There!"
-Let's take a screenshot!
 ```
 
 ## Packs
