@@ -2,49 +2,134 @@
 
 ![preview image](./pre-vhs-image-asset.png)
 
-A lightweight macro engine and DSL for writing VHS tapes faster, cleaner, and safer.
+A lightweight, adaptable preprocessor and macro engine for writing @charmbracelet/VHS tapes with more complexity in fewer characters.
 
-pre-vhs transforms a compact, expressive .tape.pre file into a valid VHS .tape.
-It gives you a tiny language for automating common VHS patterns while staying 100% compatible with standard VHS syntax.
+`pre-vsh` exposes a set of extensible syntactic conventions that you can easily adapt to your own workflow, potentially turning dozens of lines of repitious VHS commands into a small handful of pre-defined (or user-defined) macros.
 
----
-
-## Why?
-
-VHS tapes are powerful but verbose.
-Typing commands, fixing mistakes, waiting between steps—these become repetitive fast.
-
-pre-vhs makes .tape authoring dramatically easier by adding:
-
-- Macros (only `Type` is always on; everything else is opt-in)
-- Header aliases for reusable patterns
-- Positional arguments ($1, $2, …)
-- Phase-based transforms (typing styles, doublers, gap insertion, etc.)
-- Optional packs, opt-in via Use ...
-- Absolutely no runtime dependency—output is plain VHS.
-
-You still write VHS. You just write less of it.
+Additionally, `pre-vhs` unlocks functionality that is border-line unfeasible in the VHS syntax, such as advanced typing styles, and branching command sequences (conditionals). And what you get at the end is a perfectly valid VHS `.tape`.
 
 ---
 
-## Basic Usage
+## How to Get Started
+
+> [!INFO]
+> For installation and setup instructions, see the [quickstart](#quickstart) below.
+
+1. Take any sequence of commands and inline them for better readabiliity.
+
+**INSTEAD OF THIS**
+
+```shell           
+Type "pwd"          
+Sleep 1s            
+Enter              
+Sleep 1s           
+```
+
+**DO THIS:**
+
+```shell
+> Type $1, Sleep 1s, Enter, Sleep 1s # ">" is the pre-vhs directive
+pwd
+```
+
+2. Take any repeated sequence of commands and compress them into a macro.
+
+**INSTEAD OF THIS**
+
+```shell
+Type "Hello there!"
+Sleep 2s
+Ctrl+U
+Sleep 1s
+```
+
+**DO THIS**
+
+```shell
+TypeSleepErase = Type $1, Sleep 2, Ctrl+U, Sleep 1s # Define a macro
+
+> TypeSleepErase $1 # Invoke it using the directive
+Hello There!
+```
+
+`pre-vhs` syntax uses `$`-numbering to refer to the lines that immediately follow the directive.
+
+3. Compose macros to form even more advanced ways of expressing complex sequences in a more readable fashion.
+
+**INSTEAD OF THIS**
+
+```shell
+Type "echo 'Hello There!'"
+Sleep 2s
+Enter
+Sleep 1s
+Type "Let's take a screenshot!"
+Sleep 0.5s
+Screenshot
+Sleep 1s
+```
+
+**DO THIS**
+
+```shell
+RunWithSleep = Type $1, Sleep 2s, Enter, Sleep 1s
+TypeAndScreenshot = Type $1, Sleep 0.5s, Screenshot, Sleep 1s
+
+> RunWithSleep $1, TypeAndScreenshot $2
+echo "Hello There!"
+Let's take a screenshot!
+```
+
+**OR THIS**
+```
+...
+RunTypeAndScreenshot = RunWithSleep $1, TypeAndScreenshot $2
+
+> RunTypeAndScreenshot
+echo "Hello There!"
+Let's take a screenshot!
+```
+
+## Packs
+
+`pre-vhs` also ships with some powerful configuration "packs" that provide out-of-the box functionality such as:
+
+- Different typing styles: "human-style" typing with small pacing changes between words
+- `BackspaceAll` - Automatically determines the correct number of characters to delete preceding sentence.
+- a special `Probe` command that enables _conditional vhs sequences_ depending on runtime conditions.
+
+
+## Motivation
+
+VHS is a gorgeous library - but making really nice tapes requires a lot of fine-tuning, small pauses interwoven between commands, adjustments in pacing... This can end up being time-consuming, and while the visual output is spectacular, the script itself may be hard to read. This library is designed to relieve some of these problems. Once you hit up the perfect sequence of commands - you never have to write it again. `pre-vhs` provides the syntactic conventions that make it easy to streamline your workflows, as well as some super handy out-of-the-box functionality.
+
+For a complete reference guide, including advanced configuration instructions, see [REFERENCE](REFERENCE.md).
+
+---
+
+## Quickstart
 
 1. Install
 
-`npm install -D pre-vhs`
+```sh
+npm install -D pre-vhs
+```
 
-2. Write a .tape.pre
+(or for `npx`, see below.)
+
+2. Write a `.tape.pre`
 
 ### header
 
-```text
+```sh
 Use BackspaceAll Gap
 TypeEnter = Type $1, Enter
 ```
 
 ### body
 
-```text
+```sh
 > Gap 200ms
 > Type $1, Enter
 echo "hello"
@@ -55,393 +140,24 @@ echo "bye"
 
 ## 3. Build the tape
 
-```bash
+```sh
 npx pre-vhs demo.tape.pre demo.tape
 ```
 
 Or use the basename shorthand:
 
-```bash
+```sh
 npx pre-vhs demo   # reads demo.tape.pre → writes demo.tape
 ```
 
 Or pipe stdin→stdout:
 
-```bash
+```sh
 cat demo.tape.pre | npx pre-vhs > demo.tape
 ```
 
 ---
 
-## Language Reference
+[LICENSE](LICENSE.md)]
 
-A `.tape.pre` file has two sections: **header** and **body**, separated by a blank line.
-
-- **Header**: `Use` statements and alias definitions (optional)
-- **Body**: Directives (`>` lines) and raw VHS commands
-
-```text
-Use BackspaceAll Gap        ← header
-TypeEnter = Type $1, Enter  ← header
-
-> TypeEnter $1              ← body (blank line above separates)
-echo "hello"
-```
-
-No strict enforcement—the parser is lenient. But following this structure keeps files readable.
-
----
-
-## 1. Meta-directives (`>` lines)
-
-A directive line:
-
-```text
-> CmdA, CmdB arg, CmdC
-```
-
-expands to a sequence of VHS commands.
-
-If any command references $1, $2, … the next lines become its arguments:
-
-```text
-> Type $1, Enter
-ls -la
-```
-
-produces:
-
-```text
-Type "ls -la"
-Enter
-
-Expansion model (quick reference):
-- `$n` substitution happens before macro lookup.
-- Inline args vs payload: if a header token has explicit text after the macro name, that text is treated as the payload; otherwise the payload comes from the consumed lines ($1 etc.).
-- Macro outputs are treated as final VHS unless they name another macro; recursion is allowed with guards (depth/step limits, cycle detection).
-```
-
----
-
-## 2. Positional Arguments ($1..$n)
-
-Each $n in a directive consumes one line beneath it:
-
-```text
-> Type $1, Enter, Type $2, Enter
-echo "first"
-echo "second"
-```
-
----
-
-## 3. Multi-line Arguments ($*)
-
-Use `$*` to consume all remaining non-blank lines as a single argument, joined with newlines:
-
-```text
-TypeBlock = Type $*
-
-> TypeBlock
-This is a long sentence with
-multiple line breaks, it's
-arbitrarily long...
-
-# Next command starts here (blank line terminates $*)
-```
-
-Produces:
-
-```text
-Type `This is a long sentence with
-multiple line breaks, it's
-arbitrarily long...`
-# Next command starts here (blank line terminates $*)
-```
-
-### Combining $* with positional args
-
-You can use both `$1`, `$2`, etc. and `$*` in the same macro. Positional args are consumed first, then `$*` gets the rest:
-
-```text
-PrefixAndBlock = Type $1, Type $*
-
-> PrefixAndBlock $1
-prefix text
-line one
-line two
-line three
-```
-
-Produces:
-
-```text
-Type `prefix text`
-Type `line one
-line two
-line three`
-```
-
----
-
-## 4. Header Aliases
-
-Aliases are defined at the top of the file before the first non-header line.
-
-```text
-TypeEnter = Type $1, Enter
-Clear = BackspaceAll $1, Type "", Enter
-```
-
-Usage:
-
-```text
-> TypeEnter $1
-whoami
-
-> Clear $1
-garbage
-```
-
-Aliases expand just like directives. They may reference built-ins or other aliases.
-
----
-
-## 5. Built-ins & `Use`
-
-Only `Type` is always available for correct escaping. All other helpers are opt-in via packs + `Use ...`.
-
-Examples:
-
-Macro Description
-BackspaceAll Deletes entire payload text
-BackspaceAllButOne Deletes payload except last char
-Gap Inserts a timed Sleep between commands
-TypeEnter (example alias pack) types payload + Enter
-ClearLine (example alias) remove text + newline
-
-To activate:
-
-Use BackspaceAll BackspaceAllButOne Gap
-
----
-
-## 6. Typing Styles (optional pack)
-
-If you enable the typing-styles pack in pre-vhs.config.js:
-
-module.exports = {
-packs: [
-"./packs/typingStyles.js"
-]
-};
-
-…you can write:
-
-```text
-> SetTypingStyle human
-> Type $1, Enter
-echo "smoothly typed"
-```
-
-Human style breaks your text into chunks and emits randomized Type@xxms commands.
-
-Another example:
-
-```text
-> SetTypingStyle sloppy
-> Type $1
-git commit -m "oops"
-```
-
-Sloppy style injects occasional mistakes and corrections for realism.
-
----
-
-## 7. Transforms & Phases (advanced)
-
-Packs can hook into multiple phases:
-
-- `header`: rewrite header tokens before expansion (e.g., Type→HumanType).
-- `preExpandToken`: per-token tweaks before macro lookup.
-- `postExpand`: operate on emitted VHS lines (e.g., Gap inserts Sleep between commands, screenshot-after-every-command).
-- `finalize`: last chance to rewrite the entire tape.
-  Transform ordering: runs in registration order within a phase.
-
-Example: Doubling every command (header phase):
-
-```text
-Use Doubler
-```
-
-Now:
-
-```text
-> Type $1, Enter
-echo hi
-```
-
-becomes:
-
-```text
-Type "echo hi"
-Type "echo hi"
-Enter
-Enter
-```
-
-Typing styles use the same mechanism.
-
----
-
-## 8. Recursive Macros (advanced)
-
-Macros can expand into other macro calls; the engine recurses with guards
-(depth/step limits and cycle detection). This makes layered helpers like:
-
-```text
-TypeSleep = Type $1, Sleep 1s
-EnterEcho = Enter, Type $1
-RunAndEcho = TypeSleep $1, EnterEcho $2
-```
-
-work as expected without manual “with-gap” variants.
-
----
-
-## 9. Importing Packs (Project-wide)
-
-Optional packs may be enabled globally with a configuration file.
-
-pre-vhs.config.js:
-
-```js
-module.exports = {
-  packs: [
-    "./packs/typingStyles.js",
-    "./packs/gitBasics.js",
-    "./packs/emojiShortcuts.js",
-  ],
-};
-```
-
-These behave like Vim plugins: they provide macros, but the user still chooses whether to activate them with Use ....
-
----
-
-## Examples
-
-Example: Git demo
-
-Use Gap BackspaceAll
-
-GitInit = Type "git init -q", Enter, Sleep 200ms
-GitStatus = Type "git status", Enter
-
-```text
-> GitInit
-
-> Type $1, Enter
-git add .
-
-> GitStatus
-```
-
----
-
-## Example: Complex one-liner
-
-Use BackspaceAll Gap
-
-```text
-> Type $1, Sleep 200ms, Type $2, Enter, Gap 400ms, Type "Done", Enter
-echo
-"hello"
-```
-
----
-
-## CLI Options
-
-```text
-Usage: pre-vhs [options] <input> <output>
-       pre-vhs [options] <basename>
-       cat file | pre-vhs [options]
-
-Options:
-  -c, --config <path>  Path to config file
-  -h, --help           Show this help message
-```
-
-Examples:
-
-```bash
-pre-vhs input.tape.pre output.tape   # explicit input/output paths
-pre-vhs demo                          # convenience: reads demo.tape.pre → writes demo.tape
-cat file.tape.pre | pre-vhs > out.tape
-pre-vhs --config custom.config.js input.pre output.tape
-```
-
----
-
-## Testing
-
-The test suite consists of:
-
-- Golden file tests: .tape.pre → expected .tape
-- Unit tests: header parsing, alias resolution, built-ins, error reporting
-- Pack tests: typing styles, git, emoji shortcuts
-- Lint/format hooks: `npm run lint`, `npm run format`, pre-commit runs lint-staged
-
----
-
-## Design Principles
-
-- Opt-in everything except Type
-- No magic: preprocessing is visible, predictable, diff-able
-- Tiny DSL: aliases and Use, not a programming language
-- Composable: chain packs, transforms, macros
-- Zero overhead: output is plain VHS
-- Permissive: unknown syntax passes through to VHS; missing args default to empty string
-
----
-
-## Roadmap
-
-- More built-in macro packs (filesystem, shortcuts, demos)
-- Optional fenced JS header sections if needed
-- Examples gallery / cookbook
-- VS Code syntax highlighting for .tape.pre
-- Playground website
-
----
-
-## Appendix: Error Handling
-
-pre-vhs follows a **"fail fast on guardrails, lenient everywhere else"** philosophy.
-
-### Strict (throws immediately)
-
-| Scenario | Why |
-|----------|-----|
-| Macro recursion (`A → B → A`) | Prevents infinite loops |
-| Expansion depth exceeded (default 32) | Guards against blowup |
-| Expansion steps exceeded (default 10,000) | Guards against blowup |
-| Missing config file (when explicitly specified) | User error |
-| Missing input file | User error |
-
-### Lenient (silent degradation)
-
-| Scenario | Behavior |
-|----------|----------|
-| Missing `$1`, `$2`, etc. | Defaults to empty string |
-| Invalid header syntax | Treated as body line |
-| Unknown macro name | Passed through to VHS |
-| Duplicate macro registration | Last wins (warns by default) |
-
-### Rationale
-
-- **Preprocessor philosophy**: incomplete files should produce reasonable output
-- **VHS compatibility**: unknown syntax passes through unchanged
-- **Trust pack authors**: no deep validation of registered macros
-- **Clear fatal errors**: recursion/depth errors include line numbers and stack traces
+2026 © Really Him
