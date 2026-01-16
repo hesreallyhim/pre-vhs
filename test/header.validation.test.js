@@ -79,4 +79,22 @@ describe("header validation", () => {
     expect(warnSpy.mock.calls[0][0]).toMatch(/Malformed alias/);
     warnSpy.mockRestore();
   });
+
+  it("warns on alias with empty body", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { processText } = createEngine({ headerValidation: "warn" });
+
+    // "Foo = " with nothing after the equals sign
+    processText("Foo = \n\n> Type $1\nhello");
+
+    expect(warnSpy).toHaveBeenCalled();
+    expect(warnSpy.mock.calls[0][0]).toMatch(/empty body/i);
+    warnSpy.mockRestore();
+  });
+
+  it("throws on alias with empty body in error mode", () => {
+    const { processText } = createEngine({ headerValidation: "error" });
+
+    expect(() => processText("Foo = \n\n> Type $1\nhello")).toThrow(/empty body/i);
+  });
 });
