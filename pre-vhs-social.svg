@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="40%" style="stop-color:#8b5cf6"/>
+      <stop offset="70%" style="stop-color:#d946ef"/>
+      <stop offset="100%" style="stop-color:#f472b6"/>
+    </linearGradient>
+
+    <!-- Source terminal - warm tint -->
+    <linearGradient id="sourceTermGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1c1917"/>
+      <stop offset="100%" style="stop-color:#171412"/>
+    </linearGradient>
+
+    <!-- Output terminal - teal tint -->
+    <linearGradient id="outputTermGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f1419"/>
+      <stop offset="100%" style="stop-color:#0a1014"/>
+    </linearGradient>
+
+    <!-- Header gradients -->
+    <linearGradient id="sourceHeaderGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2c2622"/>
+      <stop offset="100%" style="stop-color:#241f1c"/>
+    </linearGradient>
+
+    <linearGradient id="outputHeaderGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a2530"/>
+      <stop offset="100%" style="stop-color:#141c24"/>
+    </linearGradient>
+
+    <!-- Arrow gradient -->
+    <linearGradient id="arrowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#c4b5fd"/>
+      <stop offset="100%" style="stop-color:#f0abfc"/>
+    </linearGradient>
+
+    <!-- Simple shadow - no blur on text -->
+    <filter id="boxShadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="640" fill="url(#bgGradient)"/>
+
+  <!-- LEFT: Source (.tape.pre) -->
+  <g filter="url(#boxShadow)">
+    <rect x="80" y="45" width="460" height="270" rx="12" ry="12" fill="url(#sourceTermGradient)"/>
+
+    <!-- Header bar -->
+    <rect x="80" y="45" width="460" height="36" rx="12" ry="12" fill="url(#sourceHeaderGradient)"/>
+    <rect x="80" y="69" width="460" height="12" fill="url(#sourceHeaderGradient)"/>
+
+    <!-- Traffic lights -->
+    <circle cx="104" cy="63" r="7" fill="#f38ba8"/>
+    <circle cx="126" cy="63" r="7" fill="#fab387"/>
+    <circle cx="148" cy="63" r="7" fill="#a6e3a1"/>
+
+    <!-- Filename - BIGGER -->
+    <text x="310" y="68" font-family="SF Mono, Monaco, Consolas, monospace" font-size="14" font-weight="500" fill="#d6d3d1" text-anchor="middle">demo.tape.pre</text>
+
+    <!-- Macro names - BIGGER -->
+    <g font-family="SF Mono, Monaco, Consolas, monospace" font-size="22" font-weight="500">
+      <text x="108" y="125" fill="#fbbf24">GreetUser</text>
+      <text x="108" y="165" fill="#fbbf24">ShowNewFeature</text>
+      <text x="108" y="205" fill="#fbbf24">RunDemo</text>
+      <text x="108" y="245" fill="#fbbf24">WrapUp</text>
+    </g>
+
+    <!-- Label - BIGGER -->
+    <text x="516" y="298" font-family="Inter, -apple-system, sans-serif" font-size="14" font-weight="500" fill="#a8a29e" text-anchor="end">you write this</text>
+  </g>
+
+  <!-- Arrow - NO GLOW, just solid -->
+  <g transform="translate(597, 175)">
+    <path d="M0 0 L60 0 L60 -12 L90 5 L60 22 L60 10 L0 10 Z" fill="url(#arrowGradient)"/>
+    <!-- Arrow label - BIGGER, NO FILTER -->
+    <text x="45" y="-18" font-family="Inter, -apple-system, sans-serif" font-size="16" font-weight="700" fill="white" text-anchor="middle">pre-vhs</text>
+  </g>
+
+  <!-- RIGHT: Output (demo.gif) -->
+  <g filter="url(#boxShadow)">
+    <rect x="740" y="45" width="460" height="270" rx="12" ry="12" fill="url(#outputTermGradient)"/>
+
+    <!-- Header bar -->
+    <rect x="740" y="45" width="460" height="36" rx="12" ry="12" fill="url(#outputHeaderGradient)"/>
+    <rect x="740" y="69" width="460" height="12" fill="url(#outputHeaderGradient)"/>
+
+    <!-- Traffic lights -->
+    <circle cx="764" cy="63" r="7" fill="#f38ba8"/>
+    <circle cx="786" cy="63" r="7" fill="#fab387"/>
+    <circle cx="808" cy="63" r="7" fill="#a6e3a1"/>
+
+    <!-- Label - BIGGER -->
+    <text x="970" y="68" font-family="SF Mono, Monaco, Consolas, monospace" font-size="14" font-weight="500" fill="#5eead4" text-anchor="middle">demo.gif</text>
+
+    <!-- Output text - BIGGER -->
+    <g font-family="SF Mono, Monaco, Consolas, monospace" font-size="20" font-weight="400">
+      <text x="768" y="125" fill="#67e8f9">Hey! Welcome to the demo.</text>
+      <text x="768" y="165" fill="#e2e8f0">This is a great new feature</text>
+      <text x="768" y="200" fill="#e2e8f0">I want to show you.</text>
+      <text x="768" y="250" fill="#a5b4fc">Try it out →</text>
+      <text x="918" y="250" fill="#fbbf24">npm i pre-vhs</text>
+    </g>
+
+    <!-- Cursor -->
+    <rect x="768" y="275" width="12" height="4" fill="#67e8f9"/>
+  </g>
+
+  <!-- Logo - LARGE, CRISP, NO EFFECTS -->
+  <g>
+    <text x="640" y="435" font-family="Inter, SF Pro Display, -apple-system, sans-serif" font-size="100" font-weight="800" fill="white" text-anchor="middle" letter-spacing="-3">pre-vhs</text>
+    <text x="640" y="500" font-family="Inter, SF Pro Display, -apple-system, sans-serif" font-size="32" font-weight="500" fill="white" text-anchor="middle">a preprocessor for VHS tapes</text>
+    <text x="640" y="545" font-family="Inter, SF Pro Display, -apple-system, sans-serif" font-size="32" font-weight="500" fill="white" text-anchor="middle" font-style="italic">More magic — fewer words</text>
+  </g>
+</svg>
