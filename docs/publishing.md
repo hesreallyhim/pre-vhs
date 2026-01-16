@@ -1,6 +1,6 @@
 # Publishing to npm (streamlined, via GitHub)
 
-This repo is set up to publish automatically when you push a semver tag like `v0.2.0`.
+This repo is set up to publish automatically when you push a semver tag like `v1.0.0`.
 
 ## One-time setup
 
@@ -12,7 +12,7 @@ This repo is set up to publish automatically when you push a semver tag like `v0
 
 1. Bump version in `package.json` (e.g., `npm version patch`).
 2. Commit and push to main (CI runs lint/test).
-3. Tag the commit: `git tag v0.x.y && git push origin v0.x.y`.
+3. Tag the commit: `git tag v1.0.0 && git push origin v1.0.0`.
    - The GitHub Action at `.github/workflows/publish.yml` will:
      - `npm ci`
      - `npm run lint`
@@ -28,4 +28,4 @@ This repo is set up to publish automatically when you push a semver tag like `v0
 Notes:
 
 - The workflow only triggers on tags matching `v*`. Non-tag pushes won’t publish.
-- Coverage/format/lint are enforced via scripts and the Husky pre-commit hook.\*\*\*
+- Coverage/format/lint are enforced via scripts and the Husky pre-commit hook.
