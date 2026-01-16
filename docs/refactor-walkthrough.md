@@ -98,7 +98,6 @@ Add aliases for common patterns and opt into the built-in `Gap` to remove most e
 
 ```text
 Use Gap TypeEnter
-TypeSleep = Type $1, Sleep $2
 WriteFile = Type $1, Enter, Type $2, Enter, Type $3, Enter, Type $4, Enter, Type $5, Enter, Type $6, Enter
 
 > Gap 200ms
@@ -115,7 +114,7 @@ cd api-demo
 > TypeEnter $1
 npm init -y
 
-> TypeSleep $1, Enter 2s
+> Type $1, Enter, Sleep 2s
 npm install express
 
 > WriteFile $1 $2 $3 $4 $5 $6
@@ -126,9 +125,9 @@ app.get("/health", (req, res) => res.json({ ok: true }));
 app.listen(3000, () => console.log("ready"));
 EOF
 
-> TypeSleep $1, Enter 1s
+> Type $1, Enter, Sleep 1s
 node index.js
-> TypeSleep $1, Enter 500ms
+> Type $1, Enter, Sleep 500ms
 curl -s http://localhost:3000/health
 
 > TypeEnter $1
@@ -149,7 +148,7 @@ Compose the steps into reusable higher-level macros; `Gap` still handles inter-c
 
 ```text
 Use Gap TypeEnter
-Gap 200ms
+> Gap 200ms
 
 TypeEnterSleep = TypeEnter $1, Sleep $2
 InitProject = TypeEnter "mkdir api-demo", TypeEnter "cd api-demo", TypeEnter "npm init -y", Sleep 2s, TypeEnter "npm install express", Sleep 2s
@@ -210,4 +209,4 @@ Lines: 18 plus the typing-style opt-in, with humanized typing automatically appl
 - Aliases + Gap remove most repetition; recursion bundles workflows into readable blocks.
 - Optional packs (typing styles) add polish without more boilerplate.
 
-You can mix and match: start with a simple directive style, then layer aliases and packs as needed. The final version is concise, intention-revealing, and easy to maintain.\*\*\*
+You can mix and match: start with a simple directive style, then layer aliases and packs as needed. The final version is concise, intention-revealing, and easy to maintain.

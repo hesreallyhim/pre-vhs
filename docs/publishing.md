@@ -22,7 +22,7 @@ This repo is set up to publish automatically when you push a semver tag like `v0
 
 ## Local dry-run (optional)
 
-- `npm run prepare-release` to lint/test/coverage locally.
+- `npm run pre-release` to lint/test/coverage locally.
 - `npm publish --dry-run` to inspect the publish payload.
 
 Notes:
