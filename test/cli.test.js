@@ -320,3 +320,140 @@ describe("parseArgs error handling", () => {
     mockError.mockRestore();
   });
 });
+
+// ---------------------------------------------------------------------------
+// main() function tests
+// ---------------------------------------------------------------------------
+
+describe("main", () => {
+  const { main } = require("../src/cli.js");
+  let tmpDir;
+  let originalCwd;
+  let originalArgv;
+
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "pre-vhs-main-test-"));
+    originalCwd = process.cwd();
+    originalArgv = process.argv;
+  });
+
+  afterEach(() => {
+    process.chdir(originalCwd);
+    process.argv = originalArgv;
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("catches errors and exits with code 1", () => {
+    const mockExit = vi.spyOn(process, "exit").mockImplementation((code) => {
+      throw new Error(`process.exit(${code})`);
+    });
+    const mockError = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    process.chdir(tmpDir);
+    process.argv = ["node", "pre-vhs", "nonexistent.tape.pre", "out.tape"];
+
+    expect(() => main()).toThrow("process.exit(1)");
+    expect(mockError).toHaveBeenCalledWith(
+      expect.stringContaining("[pre-vhs] Error:"),
+    );
+
+    mockExit.mockRestore();
+    mockError.mockRestore();
+  });
+
+  it("processes files successfully via main()", () => {
+    const inputContent = `> Type $1
+echo test`;
+    const inputPath = path.join(tmpDir, "main-test.tape.pre");
+    const outputPath = path.join(tmpDir, "main-test.tape");
+
+    fs.writeFileSync(inputPath, inputContent);
+
+    const mockExit = vi.spyOn(process, "exit").mockImplementation(() => {});
+
+    process.chdir(tmpDir);
+    process.argv = ["node", "pre-vhs", "main-test.tape.pre", "main-test.tape"];
+
+    main();
+
+    expect(fs.existsSync(outputPath)).toBe(true);
+    const output = fs.readFileSync(outputPath, "utf8");
+    expect(output).toContain("Type `echo test`");
+
+    mockExit.mockRestore();
+  });
+
+  it("handles config loading errors gracefully", () => {
+    const mockExit = vi.spyOn(process, "exit").mockImplementation((code) => {
+      throw new Error(`process.exit(${code})`);
+    });
+    const mockError = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    process.chdir(tmpDir);
+    process.argv = [
+      "node",
+      "pre-vhs",
+      "-c",
+      "nonexistent-config.js",
+      "in.tape.pre",
+      "out.tape",
+    ];
+
+    expect(() => main()).toThrow("process.exit(1)");
+    expect(mockError).toHaveBeenCalledWith(
+      expect.stringContaining("Config not found"),
+    );
+
+    mockExit.mockRestore();
+    mockError.mockRestore();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// run() with custom config tests
+// ---------------------------------------------------------------------------
+
+describe("run with config", () => {
+  let tmpDir;
+  let originalCwd;
+
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "pre-vhs-config-test-"));
+    originalCwd = process.cwd();
+  });
+
+  afterEach(() => {
+    process.chdir(originalCwd);
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("loads and uses custom config file", () => {
+    // Create a simple config that doesn't load any packs
+    const configContent = `module.exports = { packs: [] };`;
+    const configPath = path.join(tmpDir, "custom.config.js");
+    fs.writeFileSync(configPath, configContent);
+
+    const inputContent = `> Type $1
+echo configured`;
+    const inputPath = path.join(tmpDir, "config-test.tape.pre");
+    const outputPath = path.join(tmpDir, "config-test.tape");
+    fs.writeFileSync(inputPath, inputContent);
+
+    const mockExit = vi.spyOn(process, "exit").mockImplementation(() => {});
+
+    process.chdir(tmpDir);
+
+    run({
+      configPath: "custom.config.js",
+      inputPath: "config-test.tape.pre",
+      outputPath: "config-test.tape",
+      help: false,
+    });
+
+    expect(fs.existsSync(outputPath)).toBe(true);
+    const output = fs.readFileSync(outputPath, "utf8");
+    expect(output).toContain("Type `echo configured`");
+
+    mockExit.mockRestore();
+  });
+});
