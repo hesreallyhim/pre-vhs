@@ -32,5 +32,16 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Coverage
+        if: matrix.node == 22
+        run: npm run coverage
+
+      - name: Upload coverage to Codecov
+        if: matrix.node == 22
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/coverage-final.json
+          fail_ci_if_error: true
+
       - name: Examples check
         run: npm run examples:check

@@ -2,7 +2,7 @@
 
 ![npm](https://img.shields.io/npm/v/pre-vhs)
 ![CI](https://github.com/hesreallyhim/pre-vhs/actions/workflows/ci.yml/badge.svg)
-![coverage](https://img.shields.io/badge/coverage-97%25-brightgreen)
+[![codecov](https://codecov.io/gh/hesreallyhim/pre-vhs/branch/main/graph/badge.svg)](https://codecov.io/gh/hesreallyhim/pre-vhs)
 ![license](https://img.shields.io/npm/l/pre-vhs)
 ![node](https://img.shields.io/node/v/pre-vhs)
 ![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)
