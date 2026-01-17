@@ -40,7 +40,7 @@ jobs:
         if: matrix.node == 22
         uses: codecov/codecov-action@v4
         with:
-          files: ./coverage/coverage-final.json
+          files: ./coverage/lcov.info
           fail_ci_if_error: true
 
       - name: Examples check
