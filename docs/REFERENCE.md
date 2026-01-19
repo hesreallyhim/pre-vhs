@@ -174,7 +174,30 @@ module.exports = {
 echo "smoothly typed"
 ```
 
-Human style breaks your text into chunks and emits randomized Type@xxms commands.
+Human style emits one Type@xxms per character. Delays are based on a baseline
+speed plus a simple keyboard-distance "difficulty" score between adjacent letters,
+with jitter added.
+Once set, the typing style stays active for subsequent `Type` commands until you change it or set it back to `default`.
+
+You can also set the level and baseline inline:
+
+```text
+> SetTypingStyle human low
+> Type $1
+echo "faster rhythm"
+```
+
+```text
+> SetTypingStyle human high fast
+> Type $1
+echo "dramatic variation"
+```
+
+```text
+> SetTypingStyle human slow 50ms
+> Type $1
+echo "explicit baseline"
+```
 
 Another example:
 
@@ -185,6 +208,37 @@ git commit -m "oops"
 ```
 
 Sloppy style injects occasional mistakes and corrections for realism.
+
+You can also tune how visible the human timing is in `pre-vhs.config.js`:
+
+```js
+module.exports = {
+  packs: [
+    {
+      module: "./packs/typingStyles.js",
+      enabled: true,
+      options: { human: "high", humanSpeed: "slow" },
+    },
+  ],
+};
+```
+
+Sloppy can be tuned via `options.sloppy` and `options.sloppySpeed` as well.
+
+Supported levels: `low`, `medium` (default), `high` (multiplier for difficulty).
+Speed presets: `fast`, `medium`/`normal` (default), `slow`, or an explicit `<ms>` baseline.
+
+Sloppy supports the same inline pattern for level + speed:
+
+```text
+> SetTypingStyle sloppy high slow
+> Type $1
+git commit -m "oops"
+```
+
+For sloppy, levels control mistake frequency (`low`/`medium`/`high`) and speeds
+set the baseline delay (`fast`/`medium`/`slow` or `<ms>`). Defaults are
+`medium` + `medium` if you omit either.
 
 ---
 
