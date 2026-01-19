@@ -9,7 +9,7 @@
 
 A lightweight, adaptable Node.js preprocessor and macro engine for writing [@charmbracelet/VHS](https://github.com/charmbracelet/vhs) tapes with more complexity in fewer characters.
 
-`pre-vhs` exposes a set of extensible syntactic conventions that you can easily adapt to your own workflow, potentially turning dozens of lines of repetitious VHS commands into a small handful of pre-defined (or user-defined) macros.
+`pre-vhs` exposes a set of extensible syntactic conventions that you can easily adapt to your own workflow, potentially turning dozens of lines of repetitious VHS commands into a small handful of readable macros.
 
 Additionally, `pre-vhs` unlocks functionality that is border-line unfeasible in the VHS syntax, such as advanced typing styles, and branching command sequences (conditionals). And what you get at the end is a perfectly valid VHS `.tape`.
 
@@ -17,102 +17,230 @@ Additionally, `pre-vhs` unlocks functionality that is border-line unfeasible in 
 
 ## How to Get Started
 
-```sh
-npm i -g pre-vhs                  # install globally
-pre-vhs demo.tape.pre demo.tape   # convert .tape.pre → .tape
-```
+1. Write a `.tape.pre` file. (See [Quickstart](#quickstart) instructions below.)
+2. Convert it: `npx pre-vhs my-demo.tape.pre my-demo.tape`
+3. Record it: `vhs my-demo.tape`
 
-> [!NOTE]
-> For installation and setup instructions, see the [quickstart](#quickstart) below.
+## Things You Can Do With `pre-vhs`
 
-1. Take any sequence of commands and inline them for better readability.
+### 1. Take any sequence of commands and inline them for better readability.
 
 **INSTEAD OF THIS**
 
 ```sh
-Type "pwd"
-Sleep 1s
+Type 'echo "Hello"'
 Enter
 Sleep 1s
-```
-
-**DO THIS:**
-
-```sh
-> Type $1, Sleep 1s, Enter, Sleep 1s # ">" is the pre-vhs directive
-pwd
-```
-
-2. Take any repeated sequence of commands and compress them into a macro.
-
-**INSTEAD OF THIS**
-
-```sh
-Type "Hello there!"
-Sleep 2s
-Ctrl+U
+Type "ls"
+Enter
 Sleep 1s
 ```
 
 **DO THIS**
 
 ```sh
-TypeSleepErase = Type $1, Sleep 2s, Ctrl+U, Sleep 1s # Define a macro
+# use the `>` symbol to
+# express special directives
 
-> TypeSleepErase $1 # Invoke it using the directive
-Hello There!
+> Type $1, Enter, Sleep 1s
+echo "Hello"
+
+> Type $1, Enter, Sleep 1s
+ls
 ```
 
-`pre-vhs` syntax uses `$`-numbering to refer to the lines that immediately follow the directive.
-
-3. Compose macros to form even more advanced ways of expressing complex sequences in a more readable fashion.
+### 2. Take any repeated sequence of commands and compress them into a macro.
 
 **INSTEAD OF THIS**
 
 ```sh
-Type "echo 'Hello There!'"
-Sleep 2s
+Type 'echo "Hello"'
 Enter
 Sleep 1s
-Sleep 0.5s
-Screenshot
+Type "ls"
+Enter
 Sleep 1s
 ```
 
 **DO THIS**
 
 ```sh
-RunWithSleep = Type $1, Sleep 2s, Enter, Sleep 1s
-TakeScreenshot = Sleep 0.5s, Screenshot, Sleep 1s
+# Define a macro
+Run = Type $1, Enter, Sleep 1s
 
-> RunWithSleep $1, TakeScreenshot
-echo "Hello There!"
+> Run $1
+echo "Hello"
+
+> Run $1
+ls
 ```
 
 **OR THIS**
 
 ```sh
-RunWithSleep = Type $1, Sleep 2s, Enter, Sleep 1s
-TakeScreenshot = Sleep 0.5s, Screenshot, Sleep 1s
-RunAndScreenshot = RunWithSleep $1, TakeScreenshot
+Run = Type $1, Enter, Sleep 1s
 
-> RunAndScreenshot $1
-echo "Hello There!"
+> Run $1, Run $2
+echo "Hello"
+ls
+```
+
+`pre-vhs` syntax uses `$`-numbering to refer to the lines that immediately follow the directive.
+
+### 3. Compose macros to express even more complex sequences in a more readable fashion.
+
+**INSTEAD OF THIS**
+
+```sh
+Type 'echo "Hello"'
+Enter
+Sleep 1s
+Screenshot
+Sleep 1s
+Type "ls"
+Enter
+Sleep 1s
+```
+
+**DO THIS**
+
+```sh
+Run = Type $1, Enter, Sleep 1s
+Snap = Screenshot, Sleep 1s
+
+> Run $1, Snap, Run $2
+echo "Hello"
+ls
+```
+
+**OR THIS**
+
+```sh
+Run = Type $1, Enter, Sleep 1s
+Snap = Screenshot, Sleep 1s
+RunSnap = Run $1, Snap
+
+> RunSnap $1, Run $2
+echo "Hello"
+ls
 ```
 
 ## Packs
 
-`pre-vhs` also ships with powerful "packs" that provide out-of-the-box functionality:
+`pre-vhs` comes pre-loaded with a number of "packs" that provide powerful out-of-the-box functionality.
 
-- **Typing styles** — "human-style" typing with natural pacing variations between keystrokes
-- **BackspaceAll** — automatically determines how many characters to delete
-- **Probe** — enables conditional VHS sequences based on runtime conditions
+### Convenient Builtins
 
-## Motivation
+- `Gap` — adds an automatic `Sleep` between commands after you set a gap value.
 
-VHS is a gorgeous library - but making really nice tapes requires a lot of fine-tuning, small pauses interwoven between commands, adjustments in pacing... This can end up being time-consuming, and while the visual output is spectacular, the script itself may be hard to read. This library is designed to relieve some of these problems. Once you hit up the perfect sequence of commands - you never have to write it again. `pre-vhs` provides the syntactic conventions that make it easy to streamline your workflows, as well as some super handy out-of-the-box functionality.
+```sh
+Use Gap
 
-For a complete reference guide, including advanced configuration instructions, see [REFERENCE](REFERENCE.md).
+> Gap 200ms
+> Type $1, Enter
+echo "Hello"
+> Type $1, Enter
+ls
+```
+
+- `BackspaceAll` — deletes exactly the number of characters in the payload line.
+
+```sh
+Use BackspaceAll
+
+> Type $1
+oops
+> BackspaceAll $1
+oops
+> Type $1, Enter
+echo "ok"
+```
+
+Other helpers in this pack include `BackspaceAllButOne`, `ClearLine`, and `TypeEnter`.
+
+### Typing Styles
+
+- `Human` — naturalistic pacing with per-keystroke variation.
+
+```sh
+Use SetTypingStyle Gap
+
+> SetTypingStyle human high fast
+> Gap 200ms
+> Type $1, Enter
+Shipping a demo should feel natural.
+```
+
+![human typing demo](./docs/human-typing-demo.gif)
+
+- `Sloppy` — deliberately inserts and corrects typos for an imperfect feel.
+
+```sh
+Use SetTypingStyle Gap
+
+> SetTypingStyle sloppy high fast
+> Gap 100ms
+> Type $1, Enter
+Sometimes typing is messy.
+```
+
+![sloppy typing demo](./docs/sloppy-typing-demo.gif)
+
+### Probe - Conditional Execution
+
+Use `Probe` to run a shell command at preprocess time and branch based on its output.
+
+```sh
+Use Probe IfProbeMatched IfProbeNotMatched
+
+> Probe /ready/ $1
+curl -s http://localhost:8080/health
+
+> IfProbeMatched $1
+service is ready
+
+> IfProbeNotMatched $1
+service is NOT ready
+```
+
+## Configuration
+
+- Configuration file
+
+You can use a configuration file to load packs and set default values in `pre-vhs.config.js` (or pass `--config` to point elsewhere):
+
+```js
+module.exports = {
+  packs: [
+    "./src/packs/builtins.js",
+    "./src/packs/typingStyles.js",
+    "./src/packs/probe.js",
+  ],
+};
+```
+
+- In-script configuration
+
+Or, you can activate macros per tape with `Use ...`, then set options inline:
+
+```sh
+Use Gap SetTypingStyle
+
+> Gap 150ms
+> SetTypingStyle human low
+```
+
+## Customization
+
+`pre-vhs` is designed to allow you to build any custom workflows that suit your needs.
+
+Define macros in the header, compose them in directives, and build higher-level
+commands that read like a script. For deeper customization, write a small pack
+that registers your own macros or transforms and load it via the config file.
+
+## Reference
+
+For a complete reference guide, including advanced configuration instructions, see [REFERENCE](./docs/REFERENCE.md).
 
 ---
 
@@ -123,22 +251,53 @@ For a complete reference guide, including advanced configuration instructions, s
 ```sh
 npm i -g pre-vhs    # global
 npm i -D pre-vhs    # or as dev dependency
+npx pre-vhs ...     # or run it with npx
 ```
 
 **2. Write a `.tape.pre` file**
 
+A `.tape.pre` file consists of:
+
+1. A header (this is where you import any pre-loaded macros or define your own).
+
 ```sh
 # header
-Use BackspaceAll Gap
-TypeEnter = Type $1, Enter
+Use BackspaceAll Gap  # pre-vhs uses the "Use" syntax for imports
+TypeEnter = Type $1, Sleep 2s  # A macro is a sequence of vhs commands
+```
 
-# body
-> Gap 200ms
-> Type $1, Enter
-echo "hello"
+2. The body
 
-> TypeEnter $1
+```sh
+Output my-demo.gif # Usual vhs frontmatter
+
+> Gap 200ms  # "Gap" is a macro that inserts a `sleep` in between each word.
+> Type $1, Sleep 2s  # pre-vhs commands are written as directives (`>`).
+echo "Hello and welcome to my demo"
+
+> TypeEnter $1 # $-variables refer to the Nth line after the directives.
 echo "bye"
+```
+
+After running it through `pre-vhs`:
+
+```sh
+# demo.tape
+Output my-gemo.gif
+
+Type `echo "Hello"`
+Sleep 200ms
+Type `echo "and"`
+Sleep 200ms
+Type "`echo welcome"`
+Sleep 200ms
+Type `echo "to"`
+Sleep 200ms
+Type `echo "my"`
+Sleep 200ms
+Type `echo "demo"`
+Enter
+Sleep 2s
 ```
 
 **3. Build the tape**
@@ -161,6 +320,6 @@ cat demo.tape.pre | pre-vhs > demo.tape
 
 ---
 
-[LICENSE](LICENSE)
+[LICENSE](./docs/LICENSE)
 
-2026 © Really Him
+MIT 2026 © Really Him

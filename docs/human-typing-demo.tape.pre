@@ -1,0 +1,15 @@
+# pre-vhs.config.js: options.human = "high"
+Use SetTypingStyle Gap
+
+Output human-typing-demo.gif
+
+> SetTypingStyle human medium fast
+
+> Type $1, Ctrl+C
+Shipping a demo should feel natural.
+
+> Type $1, Ctrl+C
+Each word lands with a tiny pause.
+
+> Type $1, Sleep 2s
+The flow stays readable.

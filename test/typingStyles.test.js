@@ -16,7 +16,7 @@ describe("typingStyles pack", () => {
     expect(engine.processText(input)).toBe(formatType("plain"));
   });
 
-  it("human style splits into Type@... chunks", () => {
+  it("human style emits per-letter Type@... commands", () => {
     const engine = createEngine();
     typingStylesPack({
       registerMacros: engine.registerMacros,
@@ -37,13 +37,78 @@ describe("typingStyles pack", () => {
 
     const out = engine.processText(input).split("\n");
 
-    // each chunk is either "hello", " ", "world"
-    // We only assert pattern, not exact delays.
-    expect(out.length).toBeGreaterThan(1);
+    // One Type per character (including spaces).
+    expect(out.length).toBe("hello world".length);
     for (const line of out) {
       expect(line.startsWith("Type@")).toBe(true);
       expect(line.includes('"')).toBe(true);
     }
+
+    randSpy.mockRestore();
+  });
+
+  it("human style supports low/medium/high levels", () => {
+    const engine = createEngine();
+    typingStylesPack({
+      registerMacros: engine.registerMacros,
+      registerTransform: engine.registerTransform,
+      helpers: { formatType, baseCommandName },
+      options: {
+        defaultStyle: "default",
+        human: "high",
+      },
+    });
+
+    const randSpy = vi.spyOn(Math, "random").mockReturnValue(0.5);
+
+    const input = [
+      "Use SetTypingStyle",
+      "> SetTypingStyle human low",
+      "> Type $1",
+      "hi",
+      "> SetTypingStyle human high",
+      "> Type $1",
+      "hi",
+    ].join("\n");
+
+    const out = engine.processText(input).split("\n");
+    const delays = out.map((line) => Number(line.match(/^Type@(\d+)ms/)?.[1]));
+    expect(delays.length).toBe(4);
+    expect(delays[0]).toBe(60);
+    expect(delays[2]).toBe(60);
+    expect(delays[3]).toBeGreaterThan(delays[1]);
+
+    randSpy.mockRestore();
+  });
+
+  it("human style supports speed presets and ms baselines", () => {
+    const engine = createEngine();
+    typingStylesPack({
+      registerMacros: engine.registerMacros,
+      registerTransform: engine.registerTransform,
+      helpers: { formatType, baseCommandName },
+      options: {
+        defaultStyle: "default",
+      },
+    });
+
+    const randSpy = vi.spyOn(Math, "random").mockReturnValue(0.5);
+
+    const input = [
+      "Use SetTypingStyle",
+      "> SetTypingStyle human high fast",
+      "> Type $1",
+      "hi",
+      "> SetTypingStyle human slow 50ms",
+      "> Type $1",
+      "hi",
+    ].join("\n");
+
+    const out = engine.processText(input).split("\n");
+    const delays = out.map((line) => Number(line.match(/^Type@(\d+)ms/)?.[1]));
+
+    expect(delays[0]).toBe(35);
+    expect(delays[2]).toBe(50);
 
     randSpy.mockRestore();
   });
@@ -60,7 +125,7 @@ describe("typingStyles pack", () => {
     const randSpy = vi.spyOn(Math, "random").mockReturnValue(0.5);
 
     const out = engine.processText("> HumanType").split("\n");
-    expect(out).toEqual(['Type@90ms ""']);
+    expect(out).toEqual(['Type@60ms ""']);
 
     randSpy.mockRestore();
   });
@@ -86,6 +151,33 @@ describe("typingStyles pack", () => {
 
     const out = engine.processText(input).split("\n");
     expect(out).toContain("Backspace 1");
+
+    randSpy.mockRestore();
+  });
+
+  it("sloppy style supports level and speed presets", () => {
+    const engine = createEngine();
+    typingStylesPack({
+      registerMacros: engine.registerMacros,
+      registerTransform: engine.registerTransform,
+      helpers: { formatType, baseCommandName },
+      options: { defaultStyle: "default" },
+    });
+
+    const randSpy = vi.spyOn(Math, "random").mockReturnValue(0.5);
+
+    const input = [
+      "Use SetTypingStyle",
+      "> SetTypingStyle sloppy low fast",
+      "> Type $1",
+      "hi",
+      "> SetTypingStyle sloppy high 200ms",
+      "> Type $1",
+      "hi",
+    ].join("\n");
+
+    const out = engine.processText(input).split("\n");
+    expect(out).toEqual(['Type@60ms "hi"', 'Type@200ms "hi"']);
 
     randSpy.mockRestore();
   });
