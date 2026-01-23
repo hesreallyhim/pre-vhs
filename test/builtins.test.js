@@ -133,6 +133,7 @@ describe("builtins pack", () => {
     macros.Gap("", "Gap 200ms");
 
     expect(transform("", { lastLineBase: "" })).toBe("");
+    expect(transform("   ", { lastLineBase: "Type" })).toBe("   ");
     expect(transform("Type `hi`", { lastLineBase: "" })).toBe("Type `hi`");
     expect(transform("Sleep 1s", { lastLineBase: "Type" })).toBe("Sleep 1s");
     expect(transform("Gap 1s", { lastLineBase: "Type" })).toBe("Gap 1s");

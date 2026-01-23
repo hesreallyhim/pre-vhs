@@ -7,3 +7,4 @@ coverage/
 .npmrc
 examples/**/demo.tape
 skills/
+!docs/*

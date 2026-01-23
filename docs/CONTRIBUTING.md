@@ -63,6 +63,8 @@ Follow the code style of the library as it exists, in particular, observe
 the modular structure of the `/src` directory. JSDoc is encouraged,
 but this is not currently universally enforced in the codebase.
 
+Use conventional commits when writing your commit messages.
+
 ## Releasing
 
 The deployment and release process will be managed by the maintainer,

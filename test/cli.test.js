@@ -295,6 +295,34 @@ ls -la`;
     mockExit.mockRestore();
     mockLog.mockRestore();
   });
+
+  it("processes stdin/stdout mode when no paths provided", () => {
+    const inputContent = `> Type $1\nhi`;
+    const originalReadFileSync = fs.readFileSync;
+    const mockRead = vi
+      .spyOn(fs, "readFileSync")
+      .mockImplementation((pathOrFd, encoding) => {
+        if (pathOrFd === 0) return inputContent;
+        return originalReadFileSync(pathOrFd, encoding);
+      });
+    const mockWrite = vi
+      .spyOn(process.stdout, "write")
+      .mockImplementation(() => true);
+
+    process.chdir(tmpDir);
+
+    run({
+      configPath: undefined,
+      inputPath: undefined,
+      outputPath: undefined,
+      help: false,
+    });
+
+    expect(mockWrite).toHaveBeenCalledWith("Type `hi`");
+
+    mockRead.mockRestore();
+    mockWrite.mockRestore();
+  });
 });
 
 // ---------------------------------------------------------------------------
