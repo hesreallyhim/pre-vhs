@@ -10,7 +10,7 @@ ResetLine = BackspaceAll $1
 
 # Body
 > Gap 500ms
-Output demo.gif
+Output docs/tapes/long-example/demo.gif
 Set FontSize 20
 Set Width 1200
 Set Height 675

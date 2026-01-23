@@ -1,4 +1,4 @@
-Output human-typing-demo.gif
+Output docs/tapes/human-typing/human-typing-demo.gif
 
 
 Type@23ms "S"

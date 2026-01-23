@@ -120,9 +120,8 @@ Run = Type $1, Enter, Sleep 1s
 Snap = Screenshot, Sleep 1s
 RunSnap = Run $1, Snap
 
-> RunSnap $1, Run $2
+> RunSnap $1
 echo "Hello"
-ls
 ```
 
 ## Packs
@@ -171,7 +170,7 @@ Use SetTypingStyle Gap
 Shipping a demo should feel natural.
 ```
 
-![human typing demo](./docs/human-typing-demo.gif)
+![human typing demo](./docs/tapes/human-typing/human-typing-demo.gif)
 
 - `Sloppy` — deliberately inserts and corrects typos for an imperfect feel.
 
@@ -184,7 +183,7 @@ Use SetTypingStyle Gap
 Sometimes typing is messy.
 ```
 
-![sloppy typing demo](./docs/sloppy-typing-demo.gif)
+![sloppy typing demo](./docs/tapes/sloppy-typing/sloppy-typing-demo.gif)
 
 ### Probe - Conditional Execution
 

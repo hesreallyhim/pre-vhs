@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`docs typing demos > matches snapshot: human-typing-demo.tape 1`] = `
-"Output human-typing-demo.gif
+"Output docs/tapes/human-typing/human-typing-demo.gif
 
 
 Type@23ms "S"
@@ -106,7 +106,7 @@ Sleep 2s"
 `;
 
 exports[`docs typing demos > matches snapshot: sloppy-typing-demo.tape 1`] = `
-"Output sloppy-typing-demo.gif
+"Output docs/tapes/sloppy-typing/sloppy-typing-demo.gif
 
 
 Sleep 100ms
