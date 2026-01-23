@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-01-23
+
+### Added
+
+- Snapshot coverage for docs typing demo tapes.
+- Committed generated docs typing demo `.tape` files for README assets.
+
+### Changed
+
+- `examples:check`/`examples:regen` now target only `/examples`.
+- Docs scripts README updated to match examples-only coverage.
+- Stop ignoring `docs/*.tape` in `.gitignore`.
+
 ## [1.0.0] - 2026-01-16
 
 ### Added
