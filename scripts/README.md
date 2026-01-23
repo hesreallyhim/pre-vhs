@@ -18,7 +18,7 @@ Converts the social SVG to PNG using a local SVG renderer.
 Usage:
 
 ```sh
-bash scripts/render-social-png.sh pre-vhs-social.svg pre-vhs-social.png
+bash docs/render-social-png.sh docs/pre-vhs-social.svg docs/pre-vhs-social.png
 ```
 
 Notes:

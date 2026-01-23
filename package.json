@@ -24,7 +24,7 @@
     "format:fix": "prettier --write .",
     "examples:check": "node scripts/examples.js check",
     "examples:regen": "node scripts/examples.js regen",
-    "render:social": "bash scripts/render-social-png.sh pre-vhs-social.svg pre-vhs-social.png",
+    "render:social": "bash docs/render-social-png.sh docs/pre-vhs-social.svg docs/pre-vhs-social.png",
     "pre-release": "npm run lint && npm run test && npm run examples:check && npm run format && npm run coverage",
     "prepare": "husky"
   },
