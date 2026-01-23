@@ -245,6 +245,13 @@ describe("index.js pack initialization", () => {
     expect(engine.processText(input)).toBe("FixtureEcho hello");
   });
 
+  it("ignores non-object pack specs", () => {
+    const engine = createEngine({ warnOnMacroCollision: false });
+    initPacksFromConfig({ packs: [null, 42, undefined] }, engine);
+
+    expect(engine.processText("raw line")).toBe("raw line");
+  });
+
   it("processText wrapper loads packs when config is provided", () => {
     const input = ["> FixtureEcho $1", "hello"].join("\n");
     const output = processText(input, {
