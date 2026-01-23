@@ -50,29 +50,13 @@ function collectExampleCases() {
     });
 }
 
-function collectDocCases() {
-  const docsDir = path.join(repoRoot, "docs");
-  const entries = fs.readdirSync(docsDir, { withFileTypes: true });
-
-  return entries
-    .filter((ent) => ent.isFile() && ent.name.endsWith(".tape.pre"))
-    .map((ent) => {
-      const inputPath = path.join(docsDir, ent.name);
-      return {
-        label: path.join("docs", ent.name),
-        inputPath,
-        expectedPath: inputPath.replace(/\.tape\.pre$/, ".tape.expected"),
-      };
-    });
-}
-
 function collectCases() {
-  return [...collectExampleCases(), ...collectDocCases()];
+  return collectExampleCases();
 }
 
 const cases = collectCases();
 if (cases.length === 0) {
-  console.error("No examples or docs cases found.");
+  console.error("No example cases found.");
   process.exit(1);
 }
 
@@ -105,7 +89,7 @@ if (mode === "check") {
     process.exit(1);
   }
 
-  console.log("Examples/docs outputs are up to date.");
+  console.log("Example outputs are up to date.");
 } else {
   let updated = 0;
 
