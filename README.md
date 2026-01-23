@@ -1,4 +1,4 @@
-![preview image](./pre-vhs-social.png)
+![preview image](./docs/pre-vhs-social.png)
 
 ![npm](https://img.shields.io/npm/v/pre-vhs)
 ![CI](https://github.com/hesreallyhim/pre-vhs/actions/workflows/ci.yml/badge.svg)
