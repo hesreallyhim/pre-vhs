@@ -10,9 +10,8 @@
     "src",
     "pre-vhs.config.js",
     "README.md",
-    "REFERENCE.md",
-    "LICENSE",
-    "SECURITY.md"
+    "docs/REFERENCE.md",
+    "docs/LICENSE"
   ],
   "scripts": {
     "test": "vitest --run",
