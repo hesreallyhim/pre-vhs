@@ -29,13 +29,13 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^4.0.17",
+    "@vitest/coverage-v8": "^4.0.18",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
-    "prettier": "^3.8.0",
-    "vitest": "^4.0.17"
+    "prettier": "^3.8.1",
+    "vitest": "^4.0.18"
   },
   "engines": {
     "node": ">=22"
