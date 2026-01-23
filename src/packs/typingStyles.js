@@ -74,7 +74,6 @@ module.exports = function typingStylesPack(engine) {
       ? options.human.trim().toLowerCase()
       : "medium";
   const humanMultiplier = HUMAN_LEVELS[humanLevel] || HUMAN_LEVELS.medium;
-  let currentHumanLevel = humanLevel;
   let currentHumanMultiplier = humanMultiplier;
   let currentHumanBaselineMs = resolveHumanBaselineMs(options);
 
@@ -84,7 +83,6 @@ module.exports = function typingStylesPack(engine) {
       : "medium";
   const sloppyMistakeChance =
     SLOPPY_LEVELS[sloppyLevel] || SLOPPY_LEVELS.medium;
-  let currentSloppyLevel = sloppyLevel;
   let currentSloppyMistakeChance = sloppyMistakeChance;
   let currentSloppyBaselineMs = resolveSloppyBaselineMs(options);
 
@@ -381,7 +379,6 @@ module.exports = function typingStylesPack(engine) {
           if (humanOpts.level) {
             const resolved = resolveHumanLevel(humanOpts.level);
             if (resolved) {
-              currentHumanLevel = resolved.level;
               currentHumanMultiplier = resolved.multiplier;
             }
           }
@@ -398,7 +395,6 @@ module.exports = function typingStylesPack(engine) {
           if (sloppyOpts.level) {
             const resolved = resolveSloppyLevel(sloppyOpts.level);
             if (resolved) {
-              currentSloppyLevel = resolved.level;
               currentSloppyMistakeChance = resolved.mistakeChance;
             }
           }

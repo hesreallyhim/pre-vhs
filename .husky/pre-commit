@@ -1,2 +1,2 @@
-npm test
+npm run test:ci
 npx npm-check-updates
