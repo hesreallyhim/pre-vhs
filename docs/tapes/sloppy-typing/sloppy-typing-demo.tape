@@ -1,4 +1,4 @@
-Output sloppy-typing-demo.gif
+Output docs/tapes/sloppy-typing/sloppy-typing-demo.gif
 
 
 Sleep 100ms

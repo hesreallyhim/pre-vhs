@@ -9,11 +9,22 @@ const __dirname = path.dirname(__filename);
 describe("docs typing demos", () => {
   const repoRoot = path.join(__dirname, "..");
   const docsDir = path.join(repoRoot, "docs");
-  const cases = ["human-typing-demo.tape", "sloppy-typing-demo.tape"];
+  const cases = [
+    {
+      label: "human-typing-demo.tape",
+      relPath: path.join("tapes", "human-typing", "human-typing-demo.tape"),
+    },
+    {
+      label: "sloppy-typing-demo.tape",
+      relPath: path.join("tapes", "sloppy-typing", "sloppy-typing-demo.tape"),
+    },
+  ];
 
-  for (const name of cases) {
-    it(`matches snapshot: ${name}`, () => {
-      const text = fs.readFileSync(path.join(docsDir, name), "utf8").trimEnd();
+  for (const item of cases) {
+    it(`matches snapshot: ${item.label}`, () => {
+      const text = fs
+        .readFileSync(path.join(docsDir, item.relPath), "utf8")
+        .trimEnd();
       expect(text).toMatchSnapshot();
     });
   }
