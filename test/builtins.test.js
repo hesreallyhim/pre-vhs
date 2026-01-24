@@ -145,5 +145,35 @@ describe("builtins pack", () => {
 
     macros.Gap("", "Gap");
     expect(transform("Type `ok`", { lastLineBase: "Type" })).toBe("Type `ok`");
+
+    expect(macros.WordGap("isn't is-not some:thing:weird word!", "WordGap 200ms"))
+      .toEqual([
+        formatType("isn't "),
+        "Sleep 200ms",
+        formatType("is-not "),
+        "Sleep 200ms",
+        formatType("some:thing:weird "),
+        "Sleep 200ms",
+        formatType("word!"),
+      ]);
+
+    expect(
+      macros.SentenceGap(
+        "Mr.So-and-so waits. Mr. Mrs. Ms. Dr. Prof. Sr. Jr. St. Mt. go. Next? Yes! ok; done",
+        "SentenceGap 500ms",
+      ),
+    ).toEqual([
+      formatType("Mr.So-and-so waits. "),
+      "Sleep 500ms",
+      formatType("Mr. Mrs. Ms. Dr. Prof. Sr. Jr. St. Mt. go. "),
+      "Sleep 500ms",
+      formatType("Next? "),
+      "Sleep 500ms",
+      formatType("Yes! "),
+      "Sleep 500ms",
+      formatType("ok; "),
+      "Sleep 500ms",
+      formatType("done"),
+    ]);
   });
 });
