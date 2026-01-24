@@ -60,7 +60,7 @@ Use meta lines to consume payloads and keep sleeps with the directives.
 Output demo
 Set FontSize 14
 
-> Type $1, Enter, Sleep 200ms
+> Type $1, Enter, Sleep 200ms, Type $2, Enter, Sleep 200ms, Type $3, Enter, Sleep 200ms
 mkdir api-demo
 cd api-demo
 npm init -y
@@ -68,7 +68,7 @@ npm init -y
 > Type $1, Enter, Sleep 2s
 npm install express
 
-> Type $1, Enter
+> Type $1, Enter, Type $2, Enter, Type $3, Enter, Type $4, Enter, Type $5, Enter, Type $6, Enter
 cat <<'EOF' > index.js
 const express = require("express");
 const app = express();
@@ -82,7 +82,7 @@ node index.js
 > Type $1, Enter, Sleep 500ms
 curl -s http://localhost:3000/health
 
-> Type $1, Enter
+> Type $1, Enter, Type $2, Enter, Type $3, Enter
 git init -q
 git add .
 git commit -m "init"
@@ -178,7 +178,7 @@ If typing realism matters, enable the typing styles pack globally and switch for
 
 ```text
 Use Gap TypeEnter SetTypingStyle
-Gap 200ms
+> Gap 200ms
 > SetTypingStyle human
 
 InitProject = TypeEnter "mkdir api-demo", TypeEnter "cd api-demo", TypeEnter "npm init -y", Sleep 2s, TypeEnter "npm install express", Sleep 2s
