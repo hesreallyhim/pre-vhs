@@ -1,7 +1,7 @@
 /**
  * Typing styles pack: "human" and "sloppy".
  *
- * Usage in pre-vhs.config.js:
+ * Optional configuration in pre-vhs.config.js:
  *
  *   module.exports = {
  *     packs: [

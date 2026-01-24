@@ -268,4 +268,16 @@ describe("index.js pack initialization", () => {
     initPacksFromConfig({}, engine);
     expect(engine.processText("raw line")).toBe("raw line");
   });
+
+  it("auto-loads first-party packs unless excluded", () => {
+    const engine = createEngine({ warnOnMacroCollision: false });
+    initPacksFromConfig({}, engine);
+
+    const input = ["Use TypeEnter", "> TypeEnter $1", "hi"].join("\n");
+    expect(engine.processText(input)).toBe([formatType("hi"), "Enter"].join("\n"));
+
+    const excluded = createEngine({ warnOnMacroCollision: false });
+    initPacksFromConfig({ excludePacks: ["builtins"] }, excluded);
+    expect(excluded.processText(input)).toBe("TypeEnter hi");
+  });
 });

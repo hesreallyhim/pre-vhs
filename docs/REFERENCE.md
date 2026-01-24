@@ -167,11 +167,11 @@ Global modifiers are applied with `Apply` and do not require `Use`:
 
 ## 6. Typing Styles (optional pack)
 
-If you enable the typing-styles pack in `pre-vhs.config.js`:
+If you configure the typing-styles pack in `pre-vhs.config.js`:
 
 ```js
 module.exports = {
-  packs: ["./packs/typingStyles.js"],
+  packs: [{ module: "./packs/typingStyles.js", options: { defaultStyle: "human" } }],
 };
 ```
 
@@ -310,14 +310,19 @@ pre-vhs.config.js:
 
 ```js
 module.exports = {
+  excludePacks: ["probe"],
   packs: [
-    "./packs/builtins.js",
-    "./packs/typingStyles.js",
-    "./packs/emojiShortcuts.js",
+    {
+      module: "./packs/typingStyles.js",
+      options: { defaultStyle: "human" },
+    },
+    "./path/to/custom-pack.js",
   ],
 };
 ```
 
+First-party packs ship with pre-vhs and are always available unless excluded
+(`builtins`, `typingStyles`, `emojiShortcuts`, `probe`).
 These behave like Vim plugins: they provide macros, but the user still chooses whether to activate them with Use ....
 
 ---

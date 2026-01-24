@@ -1,9 +1,10 @@
 /**
  * pre-vhs configuration file.
  *
- * Packs are optional modules that register macros and/or
- * header transforms with the engine. They do not become active
- * until imported explicitly in the .tape.pre file using:
+ * Packs register macros and/or header transforms with the engine.
+ * First-party packs ship with pre-vhs and are always available
+ * unless you list them in excludePacks. Macros still do not become
+ * active until imported explicitly in the .tape.pre file using:
  *
  *     Use MacroName
  *
@@ -11,8 +12,8 @@
  *
  *     Use MacroA MacroB MacroC
  *
- * This file controls which packs are *available*, not which
- * are automatically enabled.
+ * This file controls which packs are available and configured,
+ * plus any first-party packs you want to exclude.
  */
 
 module.exports = {

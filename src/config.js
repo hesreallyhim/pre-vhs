@@ -11,6 +11,13 @@ const path = require("path");
 const { formatType, baseCommandName } = require("./helpers");
 const { createEngine } = require("./engine");
 
+const FIRST_PARTY_PACKS = [
+  "builtins",
+  "typingStyles",
+  "emojiShortcuts",
+  "probe",
+];
+
 // ---------------------------------------------------------------------------
 // Config file detection
 // ---------------------------------------------------------------------------
@@ -72,6 +79,7 @@ function loadConfigFile(configPath) {
 
   if (!cfg || typeof cfg !== "object") cfg = {};
   if (!Array.isArray(cfg.packs)) cfg.packs = [];
+  if (!Array.isArray(cfg.excludePacks)) cfg.excludePacks = [];
 
   return cfg;
 }
@@ -100,18 +108,52 @@ function initPacksFromConfig(config, engine, configDir) {
   const baseDir = configDir || process.cwd();
   const packs = config.packs || [];
 
+  const excluded = new Set(
+    (config.excludePacks || []).map(normalizePackName).filter(Boolean),
+  );
+  const explicitNames = new Set(
+    packs.map(packNameFromSpec).filter(Boolean).map(normalizePackName),
+  );
+  const autoPacks = FIRST_PARTY_PACKS.filter(
+    (name) => !excluded.has(name) && !explicitNames.has(name),
+  ).map((name) => ({
+    module: path.join(__dirname, "packs", `${name}.js`),
+    enabled: true,
+    options: {},
+    autoUse: false,
+  }));
+
+  const allPacks = [...autoPacks, ...packs];
+
   const engineBase = {
     registerMacros: engine.registerMacros,
     registerTransform: engine.registerTransform,
     helpers: { formatType, baseCommandName },
   };
 
-  for (const spec of packs) {
+  for (const spec of allPacks) {
     const packConfig = normalizePackSpec(spec);
     if (!packConfig.enabled || !packConfig.moduleId) continue;
 
     loadAndInitPack(packConfig, engineBase, engine, baseDir);
   }
+}
+
+function normalizePackName(name) {
+  return String(name || "").trim().toLowerCase();
+}
+
+function packNameFromSpec(spec) {
+  if (typeof spec === "string") return packNameFromModuleId(spec);
+  if (spec && typeof spec === "object") return packNameFromModuleId(spec.module);
+  return "";
+}
+
+function packNameFromModuleId(moduleId) {
+  if (!moduleId || typeof moduleId !== "string") return "";
+  const base = path.basename(moduleId);
+  const trimmed = base.endsWith(".js") ? base.slice(0, -3) : base;
+  return trimmed;
 }
 
 function normalizePackSpec(spec) {
@@ -175,9 +217,7 @@ function createAutoUseRegister(engine) {
  */
 function processText(input, options = {}) {
   const engine = createEngine(options.engineOptions);
-  if (options.config) {
-    initPacksFromConfig(options.config, engine, options.configDir);
-  }
+  initPacksFromConfig(options.config || {}, engine, options.configDir);
   return engine.processText(input);
 }
 
