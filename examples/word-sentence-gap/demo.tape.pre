@@ -1,0 +1,7 @@
+Use WordGap SentenceGap
+
+> WordGap 200ms $1
+isn't is-not some:thing:weird word!
+
+> SentenceGap 500ms $1
+Mr.So-and-so waits. Mr. Mrs. Ms. Dr. Prof. Sr. Jr. St. Mt. go. Next? Yes! ok; done

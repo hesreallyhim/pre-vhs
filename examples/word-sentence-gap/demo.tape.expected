@@ -1,0 +1,19 @@
+Type `isn't `
+Sleep 200ms
+Type `is-not `
+Sleep 200ms
+Type `some:thing:weird `
+Sleep 200ms
+Type `word!`
+
+Type `Mr.So-and-so waits. `
+Sleep 500ms
+Type `Mr. Mrs. Ms. Dr. Prof. Sr. Jr. St. Mt. go. `
+Sleep 500ms
+Type `Next? `
+Sleep 500ms
+Type `Yes! `
+Sleep 500ms
+Type `ok; `
+Sleep 500ms
+Type `done`

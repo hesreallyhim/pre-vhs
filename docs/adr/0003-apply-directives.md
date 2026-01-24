@@ -23,9 +23,9 @@ Adopt a unified "Apply" directive syntax for global modifiers:
 
 ```
 > Apply Gap 200ms
-> Apply Gap none
+> Apply Gap None
 > Apply TypingStyle human high fast
-> Apply TypingStyle none
+> Apply TypingStyle None
 ```
 
 This establishes:
@@ -33,17 +33,23 @@ This establishes:
 - "Apply" is always a pre-vhs directive (via `>`).
 - The modifier name follows `Apply` (e.g., `Gap`, `TypingStyle`).
 - All arguments live on the directive line; no payload consumption.
-- A value is required; use `none` (or `default`) to reset.
+- A value is required; use `None` or `Default` to reset (case-sensitive).
 - `Apply` is always-on (no `Use` required).
-- VHS commands are reserved; users cannot define macros with VHS command names.
+- If multiple `> Apply` directives target the same modifier, the last one wins.
 - Gap is applied at pre-expansion (between directive tokens only), not
-  between macro-expanded output lines.
+  between macro-expanded output lines or across line breaks.
+- Macros must start with a capital letter; macro name equality is
+  case-insensitive.
 
 Macro vs Transform rule:
 
 - Use macros for payload-driven behavior (e.g., `TypeAndEnter $*`,
   `WordGap 200ms $1`, `SentenceGap 500ms $1`).
 - Use transforms only for global, cross-cutting rewrites (e.g., TypingStyle).
+- Word boundaries for `WordGap` are whitespace-delimited tokens; sentence
+  boundaries for `SentenceGap` are `.`, `?`, `!`, or `;` when followed by
+  whitespace (including newline), except for the abbreviations `Mr.`, `Mrs.`,
+  `Ms.`, `Dr.`, `Prof.`, `Sr.`, `Jr.`, `St.`, `Mt.` (matched case-insensitively).
 
 ## Consequences
 
@@ -53,12 +59,12 @@ Macro vs Transform rule:
   modifier-specific handlers, to avoid macro name collisions.
 - This is a breaking change; acceptable due to low adoption (under 100 downloads).
 - Do not implement runtime deprecations; only note legacy usage in the changelog.
-- Fast-follow: add a warning when a body line starts with `Apply ...` without
-  a directive marker (`>`).
 - Gap no longer inserts sleeps between macro-expanded commands; macros own
   their internal pacing.
 - WordGap/SentenceGap are macros (not global modifiers); they only affect
   the payload they are applied to.
+- No additional validation for this pass; invalid input may crash or produce
+  unexpected output.
 
 ## Required Changes (Outline)
 
@@ -69,15 +75,17 @@ Core/Engine:
   `registerSetter("Gap", fn)` / `registerSetter("TypingStyle", fn)`.
 - Ensure `Apply` does not require `Use` (always-on directive).
 - Parsing: `Apply <ModifierName> <args...>` (no payload consumption).
-- Validate that `Apply` has at least one argument after the modifier name.
+- Do not add validation for missing arguments or malformed values.
 
 Builtins:
 
 - Replace `Gap` directive macro with an `Apply Gap ...` handler.
 - Remove legacy `Gap` usage entirely (breaking change).
 - Move Gap behavior to a pre-expand transform (directive token level).
+- Apply Gap only between comma-separated directives on a single line.
 - Add a `TypeAndEnter` macro that consumes `$*` and emits `Type` + `Enter` per line.
-- Add `WordGap` and `SentenceGap` macros that expand payload into `Type` + `Sleep` sequences.
+- Add `WordGap` and `SentenceGap` macros that expand payload into `Type` + `Sleep`
+  sequences using the word/sentence boundary rules above.
 
 Typing Styles:
 
@@ -96,7 +104,6 @@ Tests:
 
 - Add coverage for `Apply` directive routing.
 - Update existing typing styles and gap tests to use the new syntax.
-- Add tests that `Apply` rejects missing values.
 - Update gap tests to assert no sleeps are inserted between macro-expanded
   commands.
 - Add tests for `TypeAndEnter $*` and for `WordGap`/`SentenceGap` payload expansion.
