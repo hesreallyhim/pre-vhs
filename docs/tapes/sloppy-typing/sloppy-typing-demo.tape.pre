@@ -1,18 +1,25 @@
-Pack typingStyles
 Pack builtins
+Pack typingStyles
+Use EachLine
+
+TypeAndC = EachLine Type $1, Ctrl+C
 
 Output docs/tapes/sloppy-typing/sloppy-typing-demo.gif
+Set Width 600
+Set Height 300
 
-> Apply TypingStyle sloppy high fast
+> Apply TypingStyle sloppy high medium
 
-> Apply Gap 100ms
-> Type $1, Ctrl+C
-Shipping a demo should feel natural.
+> TypeAndC $*
+Humans don't type like robots.
+Sometimes we make mistakes.
 
-> Apply Gap 100ms
-> Type $1, Ctrl+C
-Each word lands with a tiny pause.
+Sleep 2s
 
-> Apply Gap 100ms
-> Type $1, Sleep 2s
-The flow stays readable.
+> Apply TypingStyle sloppy high medium
+
+Type "And sometimes..."
+Ctrl+C
+Type "We even do it on purpose. :)"
+
+Sleep 3s

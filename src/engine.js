@@ -204,17 +204,32 @@ function createEngine(options = {}) {
   }
 
   function analyzeArguments(tokens) {
-    const { max: maxIdx, hasStar: hasStaticStar } = maxArgIndex(tokens);
+    let eachLineIndex = -1;
+    for (let i = 0; i < tokens.length; i += 1) {
+      const name = tokens[i].trim().split(/\s+/)[0];
+      const entry = macroRegistry.get(name);
+      if (entry?.fn?.eachLine === true) {
+        eachLineIndex = i;
+        break;
+      }
+    }
 
-    const hasMacroStar = tokens.some((tok) => {
+    const tokensForArgs =
+      eachLineIndex >= 0 ? tokens.slice(0, eachLineIndex) : tokens;
+
+    const { max: maxIdx, hasStar: hasStaticStar } = maxArgIndex(tokensForArgs);
+
+    const hasMacroStar = tokensForArgs.some((tok) => {
       const name = tok.trim().split(/\s+/)[0];
       const entry = macroRegistry.get(name);
       return entry?.fn?.hasStar === true;
     });
 
-    const hasStar = hasStaticStar || hasMacroStar;
+    const hasStar = hasStaticStar || hasMacroStar || eachLineIndex >= 0;
     const hasBareType =
-      maxIdx === 0 && !hasStar && tokens.some((c) => c.trim() === "Type");
+      maxIdx === 0 &&
+      !hasStar &&
+      tokensForArgs.some((c) => c.trim() === "Type");
     const effectiveMaxIdx = hasBareType ? 1 : maxIdx;
 
     return { effectiveMaxIdx, hasStar };
@@ -259,19 +274,18 @@ function createEngine(options = {}) {
     output,
     state,
   ) {
-    for (let idx = 0; idx < tokens.length; idx++) {
-      const ctx = { lineNo, headerText, tokenIndex: idx };
-      const expanded = expandTokenRecursive(
-        tokens[idx],
-        payload,
-        args,
-        useSet,
-        ctx,
-        [],
-        state,
-      );
-      emitWithPostTransforms(expanded, ctx, output, state);
-    }
+    const ctx = { lineNo, headerText, tokenIndex: 0 };
+    const expanded = expandTokenList(
+      tokens,
+      payload,
+      args,
+      useSet,
+      ctx,
+      [],
+      state,
+      null,
+    );
+    emitWithPostTransforms(expanded, ctx, output, state);
   }
 
   // -------------------------------------------------------------------------
@@ -406,28 +420,131 @@ function createEngine(options = {}) {
     state,
   ) {
     const arr = Array.isArray(result) ? result : [];
-    const expanded = [];
+    return expandTokenList(
+      arr,
+      payload,
+      args,
+      useSet,
+      ctx,
+      [...stack, base],
+      state,
+      base,
+    );
+  }
 
-    for (const child of arr) {
-      const childBase = baseCommandName(child);
-      if (childBase === base) {
-        expanded.push(String(child));
+  function expandTokenList(
+    tokens,
+    payload,
+    args,
+    useSet,
+    ctx,
+    stack,
+    state,
+    blockBase,
+  ) {
+    const expanded = [];
+    for (let idx = 0; idx < tokens.length; idx += 1) {
+      const raw = tokens[idx];
+      const trimmed = String(raw || "").trim();
+      if (!trimmed) continue;
+
+      const tokenCtx = { ...ctx, tokenIndex: idx };
+      const base = baseCommandName(trimmed);
+      if (blockBase && base === blockBase) {
+        expanded.push(String(raw));
         continue;
       }
+
+      const entry = macroRegistry.get(base);
+      const isActive =
+        entry && (entry.requireUse === false || useSet.has(base));
+
+      if (isActive && entry.fn?.eachLine === true) {
+        const templateTokens = buildEachLineTemplate(tokens, idx, trimmed);
+        expanded.push(
+          ...expandEachLine(
+            templateTokens,
+            payload,
+            args,
+            useSet,
+            tokenCtx,
+            stack,
+            state,
+            blockBase,
+          ),
+        );
+        break;
+      }
+
       expanded.push(
         ...expandTokenRecursive(
-          child,
+          raw,
           payload,
           args,
           useSet,
-          ctx,
-          [...stack, base],
+          tokenCtx,
+          stack,
           state,
         ),
       );
     }
-
     return expanded;
+  }
+
+  function buildEachLineTemplate(tokens, startIndex, trimmedToken) {
+    const template = [];
+    const remainder = trimmedToken.replace(/^EachLine\b/, "").trim();
+    if (remainder) {
+      template.push(remainder);
+    }
+    for (let i = startIndex + 1; i < tokens.length; i += 1) {
+      const next = String(tokens[i] || "").trim();
+      if (next) template.push(next);
+    }
+    return template;
+  }
+
+  function expandEachLine(
+    templateTokens,
+    payload,
+    args,
+    useSet,
+    ctx,
+    stack,
+    state,
+    blockBase,
+  ) {
+    const text =
+      args && args["*"] !== undefined
+        ? String(args["*"])
+        : String(payload || "");
+    if (!text) return [];
+
+    const lines = text.split(/\r?\n/);
+    const out = [];
+    const eachLineCtx = { ...ctx, eachLine: true };
+
+    for (const line of lines) {
+      if (line === "") continue;
+      const perLineArgs = Array.isArray(args) ? [...args] : [];
+      perLineArgs["*"] = line;
+      perLineArgs[1] = line;
+
+      out.push(
+        ...expandTokenList(
+          templateTokens,
+          line,
+          perLineArgs,
+          useSet,
+          eachLineCtx,
+          stack,
+          state,
+          blockBase,
+        ),
+      );
+    }
+
+    return out;
   }
 
   // -------------------------------------------------------------------------

@@ -286,18 +286,31 @@ module.exports = function typingStylesPack(engine) {
   }
 
   /**
-   * "Sloppy" style: chunked typing with occasional mistakes and corrections.
+   * "Sloppy" style: per-character typing with occasional mistakes and corrections.
    */
   function expandSloppy(payload) {
     const chunks = chunkWords(payload);
     const out = [];
 
+    function emitSloppyChars(text) {
+      const value = String(text || "");
+      if (!value.length) {
+        const delayMs = sloppyDelayMs();
+        return [`Type@${delayMs}ms ""`];
+      }
+      const lines = [];
+      for (const ch of value) {
+        const delayMs = sloppyDelayMs();
+        const escaped = escapeDoubleQuoted(ch);
+        lines.push(`Type@${delayMs}ms "${escaped}"`);
+      }
+      return lines;
+    }
+
     for (const chunk of chunks) {
       // whitespace chunks are emitted as-is (no typos)
       if (/^\s+$/.test(chunk)) {
-        const escaped = escapeDoubleQuoted(chunk);
-        const delayMs = sloppyDelayMs();
-        out.push(`Type@${delayMs}ms "${escaped}"`);
+        out.push(...emitSloppyChars(chunk));
         continue;
       }
 
@@ -310,29 +323,52 @@ module.exports = function typingStylesPack(engine) {
         const before = chunk.slice(0, idx);
         const after = chunk.slice(idx);
 
-        const beforeEsc = escapeDoubleQuoted(before);
-        const wrongEsc = escapeDoubleQuoted(wrongChar);
-        const afterEsc = escapeDoubleQuoted(after);
-
-        const delayBefore = sloppyDelayMs();
-        const delayWrong = sloppyDelayMs();
-        const delayAfter = sloppyDelayMs();
-
-        if (before) out.push(`Type@${delayBefore}ms "${beforeEsc}"`);
-        out.push(`Type@${delayWrong}ms "${wrongEsc}"`);
+        if (before) out.push(...emitSloppyChars(before));
+        out.push(...emitSloppyChars(wrongChar));
         out.push(`Sleep ${sloppyCorrectionDelayMs()}ms`);
         out.push("Backspace 1");
         out.push(`Sleep ${sloppyCorrectionDelayMs()}ms`);
-        if (after) out.push(`Type@${delayAfter}ms "${afterEsc}"`);
+        if (after) out.push(...emitSloppyChars(after));
       } else {
         // no mistake for this chunk
-        const delay = sloppyDelayMs();
-        const escaped = escapeDoubleQuoted(chunk);
-        out.push(`Type@${delay}ms "${escaped}"`);
+        out.push(...emitSloppyChars(chunk));
       }
     }
 
     return out;
+  }
+
+  function unescapeBackticks(text) {
+    return String(text || "").replace(/\\`/g, "`");
+  }
+
+  function unescapeDoubleQuotes(text) {
+    return String(text || "")
+      .replace(/\\"/g, '"')
+      .replace(/\\\\/g, "\\");
+  }
+
+  function unescapeSingleQuotes(text) {
+    return String(text || "")
+      .replace(/\\'/g, "'")
+      .replace(/\\\\/g, "\\");
+  }
+
+  function extractTypePayload(line) {
+    const remainder = String(line || "")
+      .replace(/^Type\b/, "")
+      .trim();
+    if (!remainder) return "";
+    if (remainder.startsWith("`") && remainder.endsWith("`")) {
+      return unescapeBackticks(remainder.slice(1, -1));
+    }
+    if (remainder.startsWith('"') && remainder.endsWith('"')) {
+      return unescapeDoubleQuotes(remainder.slice(1, -1));
+    }
+    if (remainder.startsWith("'") && remainder.endsWith("'")) {
+      return unescapeSingleQuotes(remainder.slice(1, -1));
+    }
+    return remainder;
   }
 
   const styleMacros = {
@@ -350,6 +386,32 @@ module.exports = function typingStylesPack(engine) {
   // ---------------------------------------------------------------------------
   // Header transform: handle Apply TypingStyle and rewrite Type -> HumanType / SloppyType
   // ---------------------------------------------------------------------------
+
+  registerTransform("preExpandToken", (cmd, ctx) => {
+    if (!ctx || ctx.eachLine !== true) return cmd;
+    const trimmed = String(cmd || "").trim();
+    if (!trimmed) return cmd;
+    const base = baseCommandName(trimmed);
+    if (currentStyle === "human" && base === "Type") {
+      return trimmed.replace(/^Type\b/, "HumanType");
+    }
+    if (currentStyle === "sloppy" && base === "Type") {
+      return trimmed.replace(/^Type\b/, "SloppyType");
+    }
+    return cmd;
+  });
+
+  registerTransform("postExpand", (line) => {
+    if (currentStyle === "default") return line;
+    const trimmed = String(line || "").trim();
+    if (!trimmed) return line;
+    if (baseCommandName(trimmed) !== "Type") return line;
+
+    const payload = extractTypePayload(trimmed);
+    if (currentStyle === "human") return expandHuman(payload);
+    if (currentStyle === "sloppy") return expandSloppy(payload);
+    return line;
+  });
 
   registerTransform("header", (cmds) => {
     const out = [];

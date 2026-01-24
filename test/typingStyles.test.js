@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { createEngine, formatType, baseCommandName } from "../src/index.js";
+import builtinsPack from "../src/packs/builtins.js";
 import typingStylesPack from "../src/packs/typingStyles.js";
 
 describe("typingStyles pack", () => {
@@ -170,7 +171,67 @@ describe("typingStyles pack", () => {
     ].join("\n");
 
     const out = engine.processText(input).split("\n");
-    expect(out).toEqual(['Type@60ms "hi"', 'Type@200ms "hi"']);
+    expect(out).toEqual([
+      'Type@60ms "h"',
+      'Type@60ms "i"',
+      'Type@200ms "h"',
+      'Type@200ms "i"',
+    ]);
+
+    randSpy.mockRestore();
+  });
+
+  it("applies typing styles inside EachLine templates", () => {
+    const engine = createEngine();
+    builtinsPack(engine);
+    typingStylesPack({
+      registerMacros: engine.registerMacros,
+      registerTransform: engine.registerTransform,
+      helpers: { formatType, baseCommandName },
+      options: { defaultStyle: "default" },
+    });
+
+    const randSpy = vi.spyOn(Math, "random").mockReturnValue(0.5);
+
+    const input = [
+      "Use EachLine",
+      "> Apply TypingStyle human",
+      "> EachLine Type $1",
+      "hi",
+      "ok",
+    ].join("\n");
+
+    const out = engine.processText(input).split("\n");
+    expect(out[0].startsWith("Type@")).toBe(true);
+    expect(out[1].startsWith("Type@")).toBe(true);
+    expect(out[2].startsWith("Type@")).toBe(true);
+    expect(out[3].startsWith("Type@")).toBe(true);
+
+    randSpy.mockRestore();
+  });
+
+  it("applies typing style to raw Type lines after Apply TypingStyle", () => {
+    const engine = createEngine();
+    typingStylesPack({
+      registerMacros: engine.registerMacros,
+      registerTransform: engine.registerTransform,
+      helpers: { formatType, baseCommandName },
+      options: { defaultStyle: "default" },
+    });
+
+    const randSpy = vi.spyOn(Math, "random").mockReturnValue(0.5);
+
+    const input = [
+      "> Apply TypingStyle human",
+      'Type "hello"',
+      "> Apply TypingStyle None",
+      'Type "bye"',
+    ].join("\n");
+
+    const out = engine.processText(input).split("\n");
+    expect(out[0].startsWith("Type@")).toBe(true);
+    expect(out[1].startsWith("Type@")).toBe(true);
+    expect(out[out.length - 1]).toBe('Type "bye"');
 
     randSpy.mockRestore();
   });
@@ -197,8 +258,13 @@ describe("typingStyles pack", () => {
     const out = engine.processText(input).split("\n");
     expect(out).toEqual([
       'Type@130ms ""',
-      'Type@130ms "   "',
-      'Type@130ms "word"',
+      'Type@130ms " "',
+      'Type@130ms " "',
+      'Type@130ms " "',
+      'Type@130ms "w"',
+      'Type@130ms "o"',
+      'Type@130ms "r"',
+      'Type@130ms "d"',
     ]);
 
     randSpy.mockRestore();

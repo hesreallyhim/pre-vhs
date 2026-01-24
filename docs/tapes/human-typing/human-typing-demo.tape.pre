@@ -1,16 +1,24 @@
+Pack builtins
 Pack typingStyles
+Use EachLine
+
+TypeAndC = EachLine Type $1, Ctrl+C
 
 Output docs/tapes/human-typing/human-typing-demo.gif
 Set Width 600
-Set Height 400
+Set Height 300
 
-> Apply TypingStyle human medium fast
+> Apply TypingStyle human low 10
 
-> Type $1, Ctrl+C
-Shipping a demo should feel natural.
+> TypeAndC $*
+What if you could make a demo
+and have it look like
+a human was typing?
 
-> Type $1, Ctrl+C
-Each word lands with a tiny pause.
+Sleep 1s
 
-> Type $1, Sleep 2s
-The flow stays readable.
+> Apply TypingStyle human low 10
+
+Type "Well, now you can. :)"
+
+Sleep 3s

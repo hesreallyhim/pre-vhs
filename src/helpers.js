@@ -78,10 +78,19 @@ function makeAliasMacro(name, bodyCmds) {
   function aliasMacro(_payload, _rawCmd, args) {
     const out = [];
     for (const bodyCmd of bodyCmds) {
-      // First substitute $* with the greedy multi-line argument
-      let expanded = bodyCmd.replace(/\$\*/g, () => args["*"] ?? "");
+      const base = baseCommandName(bodyCmd);
+      const skipLineArgs = base === "EachLine";
+
+      // First substitute $* with the greedy multi-line argument.
+      let expanded = bodyCmd.replace(/\$\*/g, () =>
+        skipLineArgs ? "$*" : (args["*"] ?? ""),
+      );
       // Then substitute $1, $2, etc.
-      expanded = expanded.replace(/\$(\d+)/g, (_, n) => args[Number(n)] ?? "");
+      expanded = expanded.replace(/\$(\d+)/g, (_, n) => {
+        const index = Number(n);
+        if (skipLineArgs && index === 1) return "$1";
+        return args[index] ?? "";
+      });
       out.push(expanded);
     }
     return out;

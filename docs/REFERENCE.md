@@ -155,12 +155,13 @@ Only `Type` is always available for correct escaping. All other helpers are opt-
 | `WordGap`            | Types payload word-by-word + Sleep |
 | `SentenceGap`        | Types payload sentence-by-sentence |
 | `ClearLine`          | Removes text + newline             |
+| `EachLine`           | Applies a token template per line  |
 
 Load the pack, then activate the macros you want:
 
 ```text
 Pack builtins
-Use BackspaceAll BackspaceAllButOne ClearLine TypeEnter TypeAndEnter WordGap SentenceGap
+Use BackspaceAll BackspaceAllButOne ClearLine TypeEnter TypeAndEnter WordGap SentenceGap EachLine
 ```
 
 Global modifiers are applied with `Apply` and do not require `Use`:
@@ -169,6 +170,17 @@ Global modifiers are applied with `Apply` and do not require `Use`:
 Pack builtins
 > Apply Gap 200ms
 > Apply Gap None
+```
+
+`EachLine` maps a command template over all $\* lines:
+
+```text
+Pack builtins
+Use EachLine
+
+> EachLine Type $1, Ctrl+C
+line one
+line two
 ```
 
 ---
@@ -187,7 +199,7 @@ echo "smoothly typed"
 Human style emits one Type@xxms per character. Delays are based on a baseline
 speed plus a simple keyboard-distance "difficulty" score between adjacent letters,
 with jitter added.
-Once set, the typing style stays active for subsequent `Type` commands until you change it or set it back to `default`.
+Once set, the typing style stays active for subsequent `Type` commands (including raw VHS `Type` lines) until you change it or set it back to `default`.
 
 You can also set the level and baseline inline:
 
