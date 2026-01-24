@@ -4,7 +4,7 @@
  * These are NOT activated automatically. A user must import
  * the macros explicitly in a .tape.pre header using:
  *
- *     Use BackspaceAll BackspaceAllButOne ClearLine TypeEnter TypeAndEnter WordGap SentenceGap
+ *     Use BackspaceAll BackspaceAllButOne ClearLine TypeEnter TypeAndEnter WordGap SentenceGap EachLine
  *
  * Each macro returns plain VHS commands. The engine performs
  * argument substitution ($1) and transform processing. Gap
@@ -143,7 +143,14 @@ module.exports = function builtinsPack(engine) {
       const gap = extractGapArg(rawCmd);
       return typeWithGap(sentenceChunks(payload), gap);
     },
+
+    EachLine() {
+      return [];
+    },
   };
+
+  macros.EachLine.hasStar = true;
+  macros.EachLine.eachLine = true;
 
   registerMacros(macros);
 

@@ -63,6 +63,45 @@ describe("builtins pack", () => {
     ]);
   });
 
+  it("EachLine maps a token template over each payload line", () => {
+    const engine = createEngine();
+    builtinsPack(engine);
+    const input = [
+      "Use EachLine",
+      "> EachLine Type $1, Ctrl+C",
+      "one",
+      "two",
+    ].join("\n");
+
+    const out = engine.processText(input).split("\n");
+    expect(out).toEqual([
+      formatType("one"),
+      "Ctrl+C",
+      formatType("two"),
+      "Ctrl+C",
+    ]);
+  });
+
+  it("EachLine works inside aliases with $* payloads", () => {
+    const engine = createEngine();
+    builtinsPack(engine);
+    const input = [
+      "Use EachLine",
+      "TypeAndC = EachLine Type $1, Ctrl+C",
+      "> TypeAndC $*",
+      "alpha",
+      "beta",
+    ].join("\n");
+
+    const out = engine.processText(input).split("\n");
+    expect(out).toEqual([
+      formatType("alpha"),
+      "Ctrl+C",
+      formatType("beta"),
+      "Ctrl+C",
+    ]);
+  });
+
   it("Gap is inert until configured", () => {
     const engine = createEngine();
     builtinsPack(engine);

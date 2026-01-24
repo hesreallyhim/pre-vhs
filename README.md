@@ -157,7 +157,7 @@ echo "ok"
 ```
 
 Other helpers in this pack include `BackspaceAllButOne`, `ClearLine`, `TypeEnter`,
-`TypeAndEnter`, `WordGap`, and `SentenceGap`.
+`TypeAndEnter`, `WordGap`, `SentenceGap`, and `EachLine`.
 
 If you get tired of writing `WordGap 200ms`, just alias it in the header:
 
@@ -165,20 +165,46 @@ If you get tired of writing `WordGap 200ms`, just alias it in the header:
 MyWordGap = WordGap 200ms $1
 ```
 
+`EachLine` maps a template over all `$*` lines:
+
+```sh
+Pack builtins
+Use EachLine
+
+> EachLine Type $1, Ctrl+C
+line one
+line two
+```
+
 ### Typing Styles
 
 - `Human` — naturalistic pacing with per-keystroke variation.
 
 ```sh
+Pack builtins
 Pack typingStyles
-TypeSentenceAndBreak = Type $1, Ctrl+C
-> Apply TypingStyle human low fast
+Use EachLine
 
-> TypeSentenceAndBreak $*
-Shipping a demo should feel natural.
-Each word lands with a tiny pause.
-The flow stays readable.
-Sleep 2s
+TypeAndC = EachLine Type $1, Ctrl+C
+
+Output demo.gif
+Set Width 600
+Set Height 300
+
+> Apply TypingStyle human low 10
+
+> TypeAndC $*
+What if you could make a demo
+and have it look like
+a human was typing?
+
+Sleep 1s
+
+> Apply TypingStyle human low 10
+
+Type "Well, now you can. :)"
+
+Sleep 3s
 ```
 
 ![human typing demo](./docs/tapes/human-typing/human-typing-demo.gif)
@@ -186,15 +212,47 @@ Sleep 2s
 - `Sloppy` — deliberately inserts and corrects typos for an imperfect feel.
 
 ```sh
-Pack typingStyles
 Pack builtins
-> Apply TypingStyle sloppy high fast
-> Apply Gap 100ms
-> Type $1, Enter
-Sometimes typing is messy.
+Pack typingStyles
+Use EachLine
+
+TypeAndC = EachLine Type $1, Ctrl+C
+
+Output docs/tapes/sloppy-typing/sloppy-typing-demo.gif
+Set Width 600
+Set Height 300
+
+> Apply TypingStyle sloppy high medium
+
+> TypeAndC $*
+Humans don't type like robots.
+Sometimes we make mistakes.
+
+Sleep 2s
+
+> Apply TypingStyle sloppy high medium
+
+Type "And sometimes..."
+Ctrl+C
+Type "We even do it on purpose. :)"
+
+Sleep 3s
 ```
 
 ![sloppy typing demo](./docs/tapes/sloppy-typing/sloppy-typing-demo.gif)
+
+Typing styles also apply inside `EachLine` templates:
+
+```sh
+Pack typingStyles
+Pack builtins
+Use EachLine
+
+> Apply TypingStyle human medium fast
+> EachLine Type $1, Ctrl+C
+Each word lands with a tiny pause.
+The flow stays readable.
+```
 
 ### Probe - Conditional Execution
 
