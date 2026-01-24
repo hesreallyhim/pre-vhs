@@ -1,17 +1,15 @@
-Use SetTypingStyle Gap
-
 Output docs/tapes/sloppy-typing/sloppy-typing-demo.gif
 
-> SetTypingStyle sloppy high fast
+> Apply TypingStyle sloppy high fast
 
-> Gap 100ms
+> Apply Gap 100ms
 > Type $1, Ctrl+C
 Shipping a demo should feel natural.
 
-> Gap 100ms
+> Apply Gap 100ms
 > Type $1, Ctrl+C
 Each word lands with a tiny pause.
 
-> Gap 100ms
+> Apply Gap 100ms
 > Type $1, Sleep 2s
 The flow stays readable.

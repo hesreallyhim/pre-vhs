@@ -43,7 +43,7 @@ module.exports = {
    * (The engine does not auto-activate pack macros.)
    */
   packs: [
-    // Builtins: BackspaceAll, BackspaceAllButOne, ClearLine, TypeEnter, Gap
+    // Builtins: BackspaceAll, BackspaceAllButOne, ClearLine, TypeEnter, TypeAndEnter, WordGap, SentenceGap
     {
       module: "./src/packs/builtins.js",
       enabled: true,

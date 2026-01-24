@@ -6,7 +6,7 @@ A `.tape.pre` file has two sections: **header** and **body**, separated by a bla
 - **Body**: Directives (`>` lines) and raw VHS commands
 
 ```text
-Use BackspaceAll Gap        ← header
+Use BackspaceAll            ← header
 TypeEnter = Type $1, Enter  ← header
 
 > TypeEnter $1              ← body (blank line above separates)
@@ -144,14 +144,23 @@ Only `Type` is always available for correct escaping. All other helpers are opt-
 | -------------------- | -------------------------------------- |
 | `BackspaceAll`       | Deletes entire payload text            |
 | `BackspaceAllButOne` | Deletes payload except last char       |
-| `Gap`                | Inserts a timed Sleep between commands |
 | `TypeEnter`          | Types payload + Enter                  |
+| `TypeAndEnter`       | Types each line + Enter                |
+| `WordGap`            | Types payload word-by-word + Sleep     |
+| `SentenceGap`        | Types payload sentence-by-sentence     |
 | `ClearLine`          | Removes text + newline                 |
 
 To activate:
 
 ```text
-Use BackspaceAll BackspaceAllButOne Gap
+Use BackspaceAll BackspaceAllButOne ClearLine TypeEnter TypeAndEnter WordGap SentenceGap
+```
+
+Global modifiers are applied with `Apply` and do not require `Use`:
+
+```text
+> Apply Gap 200ms
+> Apply Gap None
 ```
 
 ---
@@ -169,7 +178,7 @@ module.exports = {
 …you can write:
 
 ```text
-> SetTypingStyle human
+> Apply TypingStyle human
 > Type $1, Enter
 echo "smoothly typed"
 ```
@@ -182,19 +191,19 @@ Once set, the typing style stays active for subsequent `Type` commands until you
 You can also set the level and baseline inline:
 
 ```text
-> SetTypingStyle human low
+> Apply TypingStyle human low
 > Type $1
 echo "faster rhythm"
 ```
 
 ```text
-> SetTypingStyle human high fast
+> Apply TypingStyle human high fast
 > Type $1
 echo "dramatic variation"
 ```
 
 ```text
-> SetTypingStyle human slow 50ms
+> Apply TypingStyle human slow 50ms
 > Type $1
 echo "explicit baseline"
 ```
@@ -202,7 +211,7 @@ echo "explicit baseline"
 Another example:
 
 ```text
-> SetTypingStyle sloppy
+> Apply TypingStyle sloppy
 > Type $1
 git commit -m "oops"
 ```
@@ -231,7 +240,7 @@ Speed presets: `fast`, `medium`/`normal` (default), `slow`, or an explicit `<ms>
 Sloppy supports the same inline pattern for level + speed:
 
 ```text
-> SetTypingStyle sloppy high slow
+> Apply TypingStyle sloppy high slow
 > Type $1
 git commit -m "oops"
 ```
@@ -246,9 +255,9 @@ set the baseline delay (`fast`/`medium`/`slow` or `<ms>`). Defaults are
 
 Packs can hook into multiple phases:
 
-- `header`: rewrite header tokens before expansion (e.g., Type→HumanType).
+- `header`: rewrite header tokens before expansion (e.g., Type→HumanType, Apply Gap inserting Sleep between tokens).
 - `preExpandToken`: per-token tweaks before macro lookup.
-- `postExpand`: operate on emitted VHS lines (e.g., Gap inserts Sleep between commands, screenshot-after-every-command).
+- `postExpand`: operate on emitted VHS lines (e.g., screenshot-after-every-command).
 - `finalize`: last chance to rewrite the entire tape.
   Transform ordering: runs in registration order within a phase.
 
@@ -318,12 +327,14 @@ These behave like Vim plugins: they provide macros, but the user still chooses w
 ### Git demo
 
 ```text
-Use Gap BackspaceAll
+Use BackspaceAll
 
 GitInit = Type "git init -q", Enter, Sleep 200ms
 GitStatus = Type "git status", Enter
 
 > GitInit
+
+> Apply Gap 200ms
 
 > Type $1, Enter
 git add .
@@ -336,9 +347,10 @@ git add .
 ### Complex one-liner
 
 ```text
-Use BackspaceAll Gap
+Use BackspaceAll
 
-> Type $1, Sleep 200ms, Type $2, Enter, Gap 400ms, Type "Done", Enter
+> Apply Gap 400ms
+> Type $1, Sleep 200ms, Type $2, Enter, Type "Done", Enter
 echo
 "hello"
 ```

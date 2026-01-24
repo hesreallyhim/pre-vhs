@@ -17,20 +17,20 @@
  *   options.humanSpeed: "fast" | "normal" | "medium" | "slow" | "<ms>"
  *   options.sloppy: "low" | "medium" | "high" (mistake chance)
  *   options.sloppySpeed: "fast" | "medium" | "slow" | "<ms>"
- *   > SetTypingStyle human low
- *   > SetTypingStyle human high fast
- *   > SetTypingStyle human slow 50ms
- *   > SetTypingStyle sloppy medium slow
+ *   > Apply TypingStyle human low
+ *   > Apply TypingStyle human high fast
+ *   > Apply TypingStyle human slow 50ms
+ *   > Apply TypingStyle sloppy medium slow
  *
  * Usage in .tape.pre:
  *
  *   Use BackspaceAll   # optional, from builtins
  *
- *   > SetTypingStyle human
+ *   > Apply TypingStyle human
  *   > Type $1, Enter
  *   echo "this is typed with variable speed"
  *
- *   > SetTypingStyle sloppy
+ *   > Apply TypingStyle sloppy
  *   > Type $1, Enter
  *   git commit -m "typo-prone"
  */
@@ -43,8 +43,10 @@ module.exports = function typingStylesPack(engine) {
   // State
   // ---------------------------------------------------------------------------
 
-  /** @type {"default"|"human"|"sloppy"} */
-  let currentStyle = (options && options.defaultStyle) || "default";
+  const defaultStyle = (options && options.defaultStyle) || "default";
+
+  /** @type {"default"|"human"|"sloppy"|string} */
+  let currentStyle = defaultStyle;
 
   const HUMAN_LEVELS = {
     low: 0.7,
@@ -207,18 +209,6 @@ module.exports = function typingStylesPack(engine) {
     return Math.max(0, Math.round(base + jitter));
   }
 
-  function parseStyleTokens(rawCmd, payload) {
-    const headerMatch = rawCmd.match(/SetTypingStyle\s+([^,]+)/);
-    const headerPart = headerMatch ? headerMatch[1].trim() : "";
-    const source = headerPart || String(payload || "").trim();
-    if (!source) {
-      return { style: "default", tokens: [] };
-    }
-    const tokens = source.split(/\s+/);
-    const style = tokens.shift();
-    return { style, tokens };
-  }
-
   function parseLevelAndSpeed(tokens, levelMap, speedMap) {
     let level = null;
     let baselineMs = null;
@@ -347,69 +337,6 @@ module.exports = function typingStylesPack(engine) {
     return out;
   }
 
-  // ---------------------------------------------------------------------------
-  // Macros
-  // ---------------------------------------------------------------------------
-
-  const macros = {
-    /**
-     * SetTypingStyle <style>
-     *
-     * Supported styles:
-     *   - default
-     *   - human
-     *   - sloppy
-     *
-     * Example:
-     *   > SetTypingStyle human
-     */
-    SetTypingStyle(payload, rawCmd) {
-      // Prefer explicit argument in header; fallback to payload.
-      const parsed = parseStyleTokens(rawCmd, payload);
-      const style = String(parsed.style || "default").toLowerCase();
-
-      if (style === "human" || style === "sloppy" || style === "default") {
-        currentStyle = style;
-        if (style === "human") {
-          const humanOpts = parseLevelAndSpeed(
-            parsed.tokens,
-            HUMAN_LEVELS,
-            HUMAN_SPEEDS,
-          );
-          if (humanOpts.level) {
-            const resolved = resolveHumanLevel(humanOpts.level);
-            if (resolved) {
-              currentHumanMultiplier = resolved.multiplier;
-            }
-          }
-          if (Number.isFinite(humanOpts.baselineMs)) {
-            currentHumanBaselineMs = Math.max(0, humanOpts.baselineMs);
-          }
-        }
-        if (style === "sloppy") {
-          const sloppyOpts = parseLevelAndSpeed(
-            parsed.tokens,
-            SLOPPY_LEVELS,
-            SLOPPY_SPEEDS,
-          );
-          if (sloppyOpts.level) {
-            const resolved = resolveSloppyLevel(sloppyOpts.level);
-            if (resolved) {
-              currentSloppyMistakeChance = resolved.mistakeChance;
-            }
-          }
-          if (Number.isFinite(sloppyOpts.baselineMs)) {
-            currentSloppyBaselineMs = Math.max(0, sloppyOpts.baselineMs);
-          }
-        }
-      } else {
-        // Unknown style → fall back to default
-        currentStyle = "default";
-      }
-      return [];
-    },
-  };
-
   const styleMacros = {
     HumanType(payload) {
       return expandHuman(payload || "");
@@ -419,30 +346,87 @@ module.exports = function typingStylesPack(engine) {
     },
   };
 
-  // SetTypingStyle respects Use; style expanders are always available once the pack is loaded.
-  registerMacros(macros); // requireUse defaults to true
+  // Style expanders are always available once the pack is loaded.
   registerMacros(styleMacros, { requireUse: false });
 
   // ---------------------------------------------------------------------------
-  // Header transform: rewrite Type -> HumanType / SloppyType
+  // Header transform: handle Apply TypingStyle and rewrite Type -> HumanType / SloppyType
   // ---------------------------------------------------------------------------
 
   registerTransform("header", (cmds) => {
-    if (currentStyle === "default") return cmds;
+    const out = [];
 
-    return cmds.map((c) => {
-      const base = baseCommandName(c);
-      if (base !== "Type") return c;
+    for (const cmd of cmds) {
+      const trimmed = String(cmd || "").trim();
+      if (!trimmed) continue;
 
-      if (currentStyle === "human") {
-        return c.replace(/^Type\b/, "HumanType");
+      const base = baseCommandName(trimmed);
+      if (base === "Apply") {
+        const parts = trimmed.split(/\s+/);
+        const modifier = parts[1] || "";
+        if (modifier.toLowerCase() === "typingstyle") {
+          const styleToken = parts[2];
+
+          if (styleToken === "None") {
+            currentStyle = "default";
+          } else if (styleToken === "Default") {
+            currentStyle = defaultStyle;
+          } else {
+            const style = String(styleToken || "default").toLowerCase();
+            if (style === "human" || style === "sloppy" || style === "default") {
+              currentStyle = style;
+              const rest = parts.slice(3);
+              if (style === "human") {
+                const humanOpts = parseLevelAndSpeed(
+                  rest,
+                  HUMAN_LEVELS,
+                  HUMAN_SPEEDS,
+                );
+                if (humanOpts.level) {
+                  const resolved = resolveHumanLevel(humanOpts.level);
+                  if (resolved) {
+                    currentHumanMultiplier = resolved.multiplier;
+                  }
+                }
+                if (Number.isFinite(humanOpts.baselineMs)) {
+                  currentHumanBaselineMs = Math.max(0, humanOpts.baselineMs);
+                }
+              }
+              if (style === "sloppy") {
+                const sloppyOpts = parseLevelAndSpeed(
+                  rest,
+                  SLOPPY_LEVELS,
+                  SLOPPY_SPEEDS,
+                );
+                if (sloppyOpts.level) {
+                  const resolved = resolveSloppyLevel(sloppyOpts.level);
+                  if (resolved) {
+                    currentSloppyMistakeChance = resolved.mistakeChance;
+                  }
+                }
+                if (Number.isFinite(sloppyOpts.baselineMs)) {
+                  currentSloppyBaselineMs = Math.max(0, sloppyOpts.baselineMs);
+                }
+              }
+            } else {
+              currentStyle = "default";
+            }
+          }
+          continue;
+        }
       }
-      if (currentStyle === "sloppy") {
-        return c.replace(/^Type\b/, "SloppyType");
+
+      if (currentStyle === "human" && base === "Type") {
+        out.push(trimmed.replace(/^Type\b/, "HumanType"));
+      } else if (currentStyle === "sloppy" && base === "Type") {
+        out.push(trimmed.replace(/^Type\b/, "SloppyType"));
+      } else {
+        out.push(trimmed);
       }
-      return c;
-    });
+    }
+
+    return out;
   });
 
-  return macros;
+  return styleMacros;
 };

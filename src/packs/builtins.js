@@ -2,12 +2,13 @@
  * Built-in convenience macros for pre-vhs.
  *
  * These are NOT activated automatically. A user must import
- * them explicitly in a .tape.pre header using:
+ * the macros explicitly in a .tape.pre header using:
  *
- *     Use BackspaceAll BackspaceAllButOne Gap ClearLine TypeEnter WordGap SentenceGap
+ *     Use BackspaceAll BackspaceAllButOne ClearLine TypeEnter TypeAndEnter WordGap SentenceGap
  *
  * Each macro returns plain VHS commands. The engine performs
- * argument substitution ($1), transforms, and gap insertion.
+ * argument substitution ($1) and transform processing. Gap
+ * is applied via a header transform and does not require `Use`.
  */
 
 module.exports = function builtinsPack(engine) {
@@ -121,10 +122,14 @@ module.exports = function builtinsPack(engine) {
       return [formatType(payload), "Enter"];
     },
 
-    Gap(_payload, rawCmd) {
-      const m = rawCmd.match(/Gap\s+(.+)/);
-      currentGap = m ? m[1].trim() : null;
-      return [];
+    TypeAndEnter(payload = "") {
+      const lines = String(payload || "").split(/\r?\n/);
+      const out = [];
+      for (const line of lines) {
+        if (line === "") continue;
+        out.push(formatType(line), "Enter");
+      }
+      return out;
     },
 
     WordGap(payload = "", rawCmd) {
@@ -140,20 +145,40 @@ module.exports = function builtinsPack(engine) {
 
   registerMacros(macros);
 
-  // Gap behavior implemented as a post-expand transform so it applies
-  // between fully expanded commands (including those produced by macros).
-  registerTransform("postExpand", (line, ctx) => {
-    if (!line || !String(line).trim()) return line;
-    if (!currentGap) return line;
+  registerTransform("header", (cmds) => {
+    const out = [];
+    let hadCommand = false;
 
-    const base = baseCommandName(line);
-    const lastBase = ctx.lastLineBase;
+    for (const cmd of cmds) {
+      const trimmed = String(cmd || "").trim();
+      if (!trimmed) continue;
 
-    if (!lastBase) return line;
-    if (base === "Sleep" || base === "Gap") return line;
-    if (lastBase === "Gap") return line;
+      const base = baseCommandName(trimmed);
+      if (base === "Apply") {
+        const parts = trimmed.split(/\s+/);
+        const modifier = parts[1] || "";
+        if (modifier.toLowerCase() === "gap") {
+          const value = parts.slice(2).join(" ");
+          if (value === "None" || value === "Default") {
+            currentGap = null;
+          } else {
+            currentGap = value || null;
+          }
+          continue;
+        }
 
-    return [`Sleep ${currentGap}`, line];
+        out.push(trimmed);
+        continue;
+      }
+
+      if (currentGap && hadCommand) {
+        out.push(`Sleep ${currentGap}`);
+      }
+      out.push(trimmed);
+      hadCommand = true;
+    }
+
+    return out;
   });
 
   return macros;
