@@ -126,7 +126,8 @@ echo "Hello"
 
 ## Packs
 
-`pre-vhs` comes pre-loaded with a number of "packs" that provide powerful out-of-the-box functionality.
+`pre-vhs` comes pre-loaded with a number of packs that are available by default.
+Use `excludePacks` in your config if you want to disable any of them.
 
 ### Convenient Builtins
 
@@ -201,14 +202,17 @@ service is NOT ready
 
 - Configuration file
 
-You can use a configuration file to load packs and set default values in `pre-vhs.config.js` (or pass `--config` to point elsewhere):
+You can use a configuration file to exclude built-in packs or set default options (or pass `--config` to point elsewhere):
 
 ```js
 module.exports = {
+  excludePacks: ["probe"],
   packs: [
-    "./src/packs/builtins.js",
-    "./src/packs/typingStyles.js",
-    "./src/packs/probe.js",
+    {
+      module: "./src/packs/typingStyles.js",
+      options: { defaultStyle: "human" },
+    },
+    "./path/to/custom-pack.js",
   ],
 };
 ```
