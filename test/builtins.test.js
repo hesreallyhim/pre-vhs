@@ -43,6 +43,26 @@ describe("builtins pack", () => {
     expect(out).toEqual([formatType("echo hi"), "Enter"]);
   });
 
+  it("TypeAndEnter emits a Type+Enter per payload line", () => {
+    const engine = createEngine();
+    builtinsPack(engine);
+    const input = [
+      "Use TypeAndEnter",
+      "> TypeAndEnter $*",
+      "ls",
+      "pwd",
+      "",
+    ].join("\n");
+
+    const out = engine.processText(input).split("\n");
+    expect(out).toEqual([
+      formatType("ls"),
+      "Enter",
+      formatType("pwd"),
+      "Enter",
+    ]);
+  });
+
   it("Gap is inert until configured", () => {
     const engine = createEngine();
     builtinsPack(engine);
@@ -56,8 +76,7 @@ describe("builtins pack", () => {
     const engine = createEngine();
     builtinsPack(engine);
     const input = [
-      "Use Gap",
-      "> Gap 200ms",
+      "> Apply Gap 200ms",
       "> Type $1, Enter, Type $1, Enter",
       "echo hi",
     ].join("\n");
@@ -85,13 +104,11 @@ describe("builtins pack", () => {
     const engine = createEngine();
     builtinsPack(engine);
     const input = [
-      "Use Gap",
-      "> Gap 100ms",
+      "> Apply Gap 100ms",
       "> Type $1, Enter",
       "hi",
-      "Sleep 1s",
-      "Gap 1s",
-      "> Type $1",
+      "> Apply Gap None",
+      "> Type $1, Enter",
       "bye",
     ].join("\n");
 
@@ -100,9 +117,8 @@ describe("builtins pack", () => {
       formatType("hi"),
       "Sleep 100ms",
       "Enter",
-      "Sleep 1s",
-      "Gap 1s",
       formatType("bye"),
+      "Enter",
     ]);
   });
 
@@ -120,7 +136,7 @@ describe("builtins pack", () => {
     };
 
     const macros = builtinsPack(engine);
-    const transform = transforms.postExpand;
+    const transform = transforms.header;
 
     expect(macros.BackspaceAllButOne("hey")).toEqual(["Backspace 2"]);
     expect(macros.BackspaceAllButOne()).toEqual(["Backspace 0"]);
@@ -130,21 +146,30 @@ describe("builtins pack", () => {
       "Enter",
     ]);
 
-    macros.Gap("", "Gap 200ms");
-
-    expect(transform("", { lastLineBase: "" })).toBe("");
-    expect(transform("   ", { lastLineBase: "Type" })).toBe("   ");
-    expect(transform("Type `hi`", { lastLineBase: "" })).toBe("Type `hi`");
-    expect(transform("Sleep 1s", { lastLineBase: "Type" })).toBe("Sleep 1s");
-    expect(transform("Gap 1s", { lastLineBase: "Type" })).toBe("Gap 1s");
-    expect(transform("Type `ok`", { lastLineBase: "Gap" })).toBe("Type `ok`");
-    expect(transform("Type `ok`", { lastLineBase: "Type" })).toEqual([
-      "Sleep 200ms",
+    expect(transform(["Apply Gap 200ms", "Type `ok`", "Enter"])).toEqual([
       "Type `ok`",
+      "Sleep 200ms",
+      "Enter",
     ]);
 
-    macros.Gap("", "Gap");
-    expect(transform("Type `ok`", { lastLineBase: "Type" })).toBe("Type `ok`");
+    expect(
+      transform([
+        "Apply Gap 200ms",
+        "Type `ok`",
+        "Apply TypingStyle human",
+        "Enter",
+      ]),
+    ).toEqual([
+      "Type `ok`",
+      "Apply TypingStyle human",
+      "Sleep 200ms",
+      "Enter",
+    ]);
+
+    expect(transform(["Apply Gap None", "Type `ok`", "Enter"])).toEqual([
+      "Type `ok`",
+      "Enter",
+    ]);
 
     expect(macros.WordGap("isn't is-not some:thing:weird word!", "WordGap 200ms"))
       .toEqual([

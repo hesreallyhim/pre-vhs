@@ -1,8 +1,6 @@
-Use Gap TypeEnter
-
-> Gap 200ms
-> TypeEnter $1
+> Apply Gap 200ms
+> Type $1, Enter
 hello
 
-> TypeEnter $1
+> Type $1, Enter
 world

@@ -130,12 +130,10 @@ echo "Hello"
 
 ### Convenient Builtins
 
-- `Gap` — adds an automatic `Sleep` between commands after you set a gap value.
+- `Gap` — adds an automatic `Sleep` between directive tokens after you apply a gap value.
 
 ```sh
-Use Gap
-
-> Gap 200ms
+> Apply Gap 200ms
 > Type $1, Enter
 echo "Hello"
 > Type $1, Enter
@@ -155,17 +153,16 @@ oops
 echo "ok"
 ```
 
-Other helpers in this pack include `BackspaceAllButOne`, `ClearLine`, and `TypeEnter`.
+Other helpers in this pack include `BackspaceAllButOne`, `ClearLine`, `TypeEnter`,
+`TypeAndEnter`, `WordGap`, and `SentenceGap`.
 
 ### Typing Styles
 
 - `Human` — naturalistic pacing with per-keystroke variation.
 
 ```sh
-Use SetTypingStyle Gap
-
-> SetTypingStyle human high fast
-> Gap 200ms
+> Apply TypingStyle human high fast
+> Apply Gap 200ms
 > Type $1, Enter
 Shipping a demo should feel natural.
 ```
@@ -175,10 +172,8 @@ Shipping a demo should feel natural.
 - `Sloppy` — deliberately inserts and corrects typos for an imperfect feel.
 
 ```sh
-Use SetTypingStyle Gap
-
-> SetTypingStyle sloppy high fast
-> Gap 100ms
+> Apply TypingStyle sloppy high fast
+> Apply Gap 100ms
 > Type $1, Enter
 Sometimes typing is messy.
 ```
@@ -223,10 +218,8 @@ module.exports = {
 Or, you can activate macros per tape with `Use ...`, then set options inline:
 
 ```sh
-Use Gap SetTypingStyle
-
-> Gap 150ms
-> SetTypingStyle human low
+> Apply Gap 150ms
+> Apply TypingStyle human low
 ```
 
 ## Customization
@@ -261,8 +254,8 @@ A `.tape.pre` file consists of:
 
 ```sh
 # header
-Use BackspaceAll Gap  # pre-vhs uses the "Use" syntax for imports
-TypeEnter = Type $1, Sleep 2s  # A macro is a sequence of vhs commands
+Use BackspaceAll WordGap  # pre-vhs uses the "Use" syntax for imports
+TypeEnter = Type $1, Enter  # A macro is a sequence of vhs commands
 ```
 
 2. The body
@@ -270,8 +263,7 @@ TypeEnter = Type $1, Sleep 2s  # A macro is a sequence of vhs commands
 ```sh
 Output my-demo.gif # Usual vhs frontmatter
 
-> Gap 200ms  # "Gap" is a macro that inserts a `sleep` in between each word.
-> Type $1, Sleep 2s  # pre-vhs commands are written as directives (`>`).
+> WordGap 200ms $1  # WordGap inserts a `sleep` in between each word.
 echo "Hello and welcome to my demo"
 
 > TypeEnter $1 # $-variables refer to the Nth line after the directives.
@@ -284,19 +276,21 @@ After running it through `pre-vhs`:
 # demo.tape
 Output my-gemo.gif
 
-Type `echo "Hello"`
+Type `echo `
 Sleep 200ms
-Type `echo "and"`
+Type `"Hello `
 Sleep 200ms
-Type "`echo welcome"`
+Type `and `
 Sleep 200ms
-Type `echo "to"`
+Type `welcome `
 Sleep 200ms
-Type `echo "my"`
+Type `to `
 Sleep 200ms
-Type `echo "demo"`
+Type `my `
+Sleep 200ms
+Type `demo"`
+Type `echo "bye"`
 Enter
-Sleep 2s
 ```
 
 **3. Build the tape**

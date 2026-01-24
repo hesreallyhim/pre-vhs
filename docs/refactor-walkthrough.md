@@ -76,7 +76,7 @@ app.get("/health", (req, res) => res.json({ ok: true }));
 app.listen(3000, () => console.log("ready"));
 EOF
 
-> Sleep 300ms
+Sleep 300ms
 > Type $1, Enter, Sleep 1s
 node index.js
 > Type $1, Enter, Sleep 500ms
@@ -94,13 +94,13 @@ Lines: 20. Less repetition; sleeps colocated with the commands they affect.
 
 ## 2) Header aliases + Gap (opt-in builtins)
 
-Add aliases for common patterns and opt into the built-in `Gap` to remove most explicit sleeps.
+Add aliases for common patterns and apply a `Gap` to reduce explicit sleeps between directive tokens.
 
 ```text
-Use Gap TypeEnter
+Use TypeEnter
 WriteFile = Type $1, Enter, Type $2, Enter, Type $3, Enter, Type $4, Enter, Type $5, Enter, Type $6, Enter
 
-> Gap 200ms
+> Apply Gap 200ms
 
 > TypeEnter $1
 Output demo
@@ -138,17 +138,17 @@ git add .
 git commit -m "init"
 ```
 
-Lines: 29, but far less manual sleep noise—the `Gap` adds inter-command sleeps automatically.
+Lines: 29, but far less manual sleep noise—`Apply Gap` inserts sleeps between directive tokens.
 
 ---
 
 ## 3) Recursive aliases to bundle workflows
 
-Compose the steps into reusable higher-level macros; `Gap` still handles inter-command pacing.
+Compose the steps into reusable higher-level macros; `Gap` still handles directive-level pacing.
 
 ```text
-Use Gap TypeEnter
-> Gap 200ms
+Use TypeEnter
+> Apply Gap 200ms
 
 TypeEnterSleep = TypeEnter $1, Sleep $2
 InitProject = TypeEnter "mkdir api-demo", TypeEnter "cd api-demo", TypeEnter "npm init -y", Sleep 2s, TypeEnter "npm install express", Sleep 2s
@@ -177,9 +177,9 @@ Lines: 19, but reads at the workflow level (“InitProject”, “WriteApp”, �
 If typing realism matters, enable the typing styles pack globally and switch for the file:
 
 ```text
-Use Gap TypeEnter SetTypingStyle
-> Gap 200ms
-> SetTypingStyle human
+Use TypeEnter
+> Apply Gap 200ms
+> Apply TypingStyle human
 
 InitProject = TypeEnter "mkdir api-demo", TypeEnter "cd api-demo", TypeEnter "npm init -y", Sleep 2s, TypeEnter "npm install express", Sleep 2s
 WriteApp = TypeEnter "cat <<'EOF' > index.js", TypeEnter $1, TypeEnter $2, TypeEnter $3, TypeEnter $4, TypeEnter "EOF"

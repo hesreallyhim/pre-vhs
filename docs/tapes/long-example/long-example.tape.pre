@@ -1,5 +1,5 @@
 # Header
-Use Gap TypeEnter BackspaceAll
+Use TypeEnter BackspaceAll
 
 # Aliases
 Comment = Type "$1"
@@ -9,7 +9,7 @@ RunWait = Type "$1", Sleep $2, Enter
 ResetLine = BackspaceAll $1
 
 # Body
-> Gap 500ms
+> Apply Gap 500ms
 Output docs/tapes/long-example/demo.gif
 Set FontSize 20
 Set Width 1200
