@@ -1,13 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { createEngine, formatType } from "../src/index.js";
-import builtinsPack from "../src/packs/builtins.js";
 
 describe("examples-style behaviors", () => {
   it("expands a simple alias macro", () => {
     const { processText } = createEngine();
-    const input = ["TypeEnter = Type $1, Enter", "> TypeEnter $1", "hi"].join(
-      "\n",
-    );
+    const input = [
+      "LocalTypeEnter = Type $1, Enter",
+      "> LocalTypeEnter $1",
+      "hi",
+    ].join("\n");
 
     const out = processText(input).split("\n");
     expect(out).toEqual([formatType("hi"), "Enter"]);
@@ -34,7 +35,6 @@ describe("examples-style behaviors", () => {
 
   it("applies a post-expand transform (adds Screenshot after each command)", () => {
     const engine = createEngine();
-    builtinsPack(engine); // not strictly needed; included to mirror pack usage
 
     engine.registerTransform("postExpand", (line) => {
       // For the test, just append a Screenshot after every command.

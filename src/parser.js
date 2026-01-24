@@ -10,17 +10,19 @@ const { makeAliasMacro, reportHeaderIssue } = require("./helpers");
 /**
  * Parse a file header at the top of the .tape.pre:
  * - Skips blank lines and comments (#..., //...).
+ * - `Pack ...` lines load pack modules (header only).
  * - `Use ...` lines collect macro names to activate.
  * - Alias lines: Name = Cmd1, Cmd2, ...
  * - Stops at the first line that is not blank/comment/alias/Use.
  *
  * @param {string[]} lines - All lines of the file
  * @param {"off"|"warn"|"error"} headerValidation - Validation mode (default: "warn")
- * @returns {{ macrosFromHeader: object, useNames: string[], bodyLines: string[], bodyStartIndex: number }}
+ * @returns {{ macrosFromHeader: object, useNames: string[], packPaths: string[], bodyLines: string[], bodyStartIndex: number }}
  */
 function parseFileHeader(lines, headerValidation = "warn") {
   const macrosFromHeader = {};
   const useNames = [];
+  const packPaths = [];
   let bodyStart = lines.length;
   let hasHeaderContent = false;
 
@@ -42,6 +44,15 @@ function parseFileHeader(lines, headerValidation = "warn") {
       }
       bodyStart = i;
       break;
+    }
+
+    const packResult = tryParsePackStatement(line, headerValidation, lineNo);
+    if (packResult.matched) {
+      if (packResult.path) {
+        packPaths.push(packResult.path);
+        hasHeaderContent = true;
+      }
+      continue;
     }
 
     const useResult = tryParseUseStatement(line, headerValidation, lineNo);
@@ -81,6 +92,7 @@ function parseFileHeader(lines, headerValidation = "warn") {
   return {
     macrosFromHeader,
     useNames,
+    packPaths,
     bodyLines: lines.slice(bodyStart),
     bodyStartIndex: bodyStart,
   };
@@ -141,6 +153,39 @@ function tryParseUseStatement(line, headerValidation, lineNo) {
     .filter(Boolean);
 
   return { matched: true, names };
+}
+
+/**
+ * Try to parse a Pack statement from a line.
+ *
+ * @param {string} line - The line to parse
+ * @param {"off"|"warn"|"error"} headerValidation - Validation mode
+ * @param {number} lineNo - 1-based line number for error reporting
+ * @returns {{ matched: boolean, path: string }}
+ */
+function tryParsePackStatement(line, headerValidation, lineNo) {
+  const packMatch = line.match(/^\s*Pack\s*(.*)$/);
+  if (packMatch === null || !/^\s*Pack\b/.test(line)) {
+    return { matched: false, path: "" };
+  }
+
+  const raw = (packMatch[1] || "").trim();
+  if (!raw) {
+    reportHeaderIssue(
+      headerValidation,
+      lineNo,
+      "'Pack' requires a path to a JS file",
+      line,
+    );
+    return { matched: true, path: "" };
+  }
+
+  const quoted =
+    (raw.startsWith('"') && raw.endsWith('"')) ||
+    (raw.startsWith("'") && raw.endsWith("'"));
+  const packPath = quoted ? raw.slice(1, -1).trim() : raw;
+
+  return { matched: true, path: packPath };
 }
 
 /**

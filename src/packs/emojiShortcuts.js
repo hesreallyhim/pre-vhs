@@ -7,7 +7,7 @@
  * If a payload is provided, it is appended after the emoji with a space.
  * Otherwise, only the emoji is typed.
  *
- * Example usage (with this pack enabled in pre-vhs.config.js):
+ * Example usage (pack is available by default):
  *
  *   > EmojiSmile $1, Enter
  *   hello

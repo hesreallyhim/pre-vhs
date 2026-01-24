@@ -12,12 +12,6 @@ describe("golden: examples", () => {
   const repoRoot = path.join(__dirname, "..");
   const examplesDir = path.join(repoRoot, "examples");
   const cliPath = path.join(repoRoot, "src", "index.js");
-  const configPath = path.join(
-    repoRoot,
-    "test",
-    "fixtures",
-    "pre-vhs.examples.config.js",
-  );
   const cases = fs
     .readdirSync(examplesDir, { withFileTypes: true })
     .filter((ent) => ent.isDirectory())
@@ -36,14 +30,10 @@ describe("golden: examples", () => {
         : null;
 
       try {
-        execFileSync(
-          process.execPath,
-          [cliPath, "--config", configPath, baseName],
-          {
-            cwd: repoRoot,
-            stdio: "pipe",
-          },
-        );
+        execFileSync(process.execPath, [cliPath, baseName], {
+          cwd: repoRoot,
+          stdio: "pipe",
+        });
 
         const expected = fs.readFileSync(expPath, "utf8").trimEnd();
         const actual = fs.readFileSync(outPath, "utf8").trimEnd();

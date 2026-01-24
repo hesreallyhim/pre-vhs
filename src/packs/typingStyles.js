@@ -1,22 +1,14 @@
 /**
  * Typing styles pack: "human" and "sloppy".
  *
- * Optional configuration in pre-vhs.config.js:
+ * Optional configuration (apply per tape):
  *
- *   module.exports = {
- *     packs: [
- *       {
- *         module: "./packs/typingStyles.js",
- *         enabled: true,
- *         options: { defaultStyle: "default", human: "medium" }
- *       }
- *     ]
- *   };
+ *   > Apply TypingStyle human medium fast
  *
- *   options.human: "low" | "medium" | "high" (difficulty multiplier)
- *   options.humanSpeed: "fast" | "normal" | "medium" | "slow" | "<ms>"
- *   options.sloppy: "low" | "medium" | "high" (mistake chance)
- *   options.sloppySpeed: "fast" | "medium" | "slow" | "<ms>"
+ *   human levels: "low" | "medium" | "high" (difficulty multiplier)
+ *   human speeds: "fast" | "normal" | "medium" | "slow" | "<ms>"
+ *   sloppy levels: "low" | "medium" | "high" (mistake chance)
+ *   sloppy speeds: "fast" | "medium" | "slow" | "<ms>"
  *   > Apply TypingStyle human low
  *   > Apply TypingStyle human high fast
  *   > Apply TypingStyle human slow 50ms

@@ -2,10 +2,12 @@
 
 A `.tape.pre` file has two sections: **header** and **body**, separated by a blank line.
 
-- **Header**: `Use` statements and alias definitions (optional)
+- **Header**: `Pack` statements, `Use` statements, and alias definitions (optional)
 - **Body**: Directives (`>` lines) and raw VHS commands
 
 ```text
+Pack builtins               ← header
+Pack ./my-pack.js           ← header
 Use BackspaceAll            ← header
 TypeEnter = Type $1, Enter  ← header
 
@@ -14,6 +16,10 @@ echo "hello"
 ```
 
 No strict enforcement—the parser is lenient. But following this structure keeps files readable.
+
+`Pack` loads a pack module. First-party packs can be referenced by name
+(`builtins`, `typingStyles`, `emojiShortcuts`, `probe`). Local pack paths resolve
+relative to where you run pre-vhs (the current working directory), not the tape location.
 
 ---
 
@@ -150,15 +156,17 @@ Only `Type` is always available for correct escaping. All other helpers are opt-
 | `SentenceGap`        | Types payload sentence-by-sentence |
 | `ClearLine`          | Removes text + newline             |
 
-To activate:
+Load the pack, then activate the macros you want:
 
 ```text
+Pack builtins
 Use BackspaceAll BackspaceAllButOne ClearLine TypeEnter TypeAndEnter WordGap SentenceGap
 ```
 
 Global modifiers are applied with `Apply` and do not require `Use`:
 
 ```text
+Pack builtins
 > Apply Gap 200ms
 > Apply Gap None
 ```
@@ -167,17 +175,10 @@ Global modifiers are applied with `Apply` and do not require `Use`:
 
 ## 6. Typing Styles (optional pack)
 
-If you configure the typing-styles pack in `pre-vhs.config.js`:
-
-```js
-module.exports = {
-  packs: [{ module: "./packs/typingStyles.js", options: { defaultStyle: "human" } }],
-};
-```
-
-…you can write:
+Load the pack, then write:
 
 ```text
+Pack typingStyles
 > Apply TypingStyle human
 > Type $1, Enter
 echo "smoothly typed"
@@ -217,22 +218,6 @@ git commit -m "oops"
 ```
 
 Sloppy style injects occasional mistakes and corrections for realism.
-
-You can also tune how visible the human timing is in `pre-vhs.config.js`:
-
-```js
-module.exports = {
-  packs: [
-    {
-      module: "./packs/typingStyles.js",
-      enabled: true,
-      options: { human: "high", humanSpeed: "slow" },
-    },
-  ],
-};
-```
-
-Sloppy can be tuned via `options.sloppy` and `options.sloppySpeed` as well.
 
 Supported levels: `low`, `medium` (default), `high` (multiplier for difficulty).
 Speed presets: `fast`, `medium`/`normal` (default), `slow`, or an explicit `<ms>` baseline.
@@ -304,26 +289,18 @@ work as expected without manual “with-gap” variants.
 
 ## 9. Importing Packs (Project-wide)
 
-Optional packs may be enabled globally with a configuration file.
+Packs are never auto-loaded. First-party packs ship with pre-vhs, but you still
+opt into them with `Pack` + `Use`. These behave like Vim plugins: they provide
+macros, but the user still chooses whether to activate them with Use ....
 
-pre-vhs.config.js:
+To load packs per tape:
 
-```js
-module.exports = {
-  excludePacks: ["probe"],
-  packs: [
-    {
-      module: "./packs/typingStyles.js",
-      options: { defaultStyle: "human" },
-    },
-    "./path/to/custom-pack.js",
-  ],
-};
+```text
+Pack builtins
+Pack typingStyles
+Pack ./my-pack.js
+Use MyMacro
 ```
-
-First-party packs ship with pre-vhs and are always available unless excluded
-(`builtins`, `typingStyles`, `emojiShortcuts`, `probe`).
-These behave like Vim plugins: they provide macros, but the user still chooses whether to activate them with Use ....
 
 ---
 
@@ -332,6 +309,7 @@ These behave like Vim plugins: they provide macros, but the user still chooses w
 ### Git demo
 
 ```text
+Pack builtins
 Use BackspaceAll
 
 GitInit = Type "git init -q", Enter, Sleep 200ms
@@ -352,6 +330,7 @@ git add .
 ### Complex one-liner
 
 ```text
+Pack builtins
 Use BackspaceAll
 
 > Apply Gap 400ms
@@ -370,7 +349,6 @@ Usage: pre-vhs [options] <input> <output>
        cat file | pre-vhs [options]
 
 Options:
-  -c, --config <path>  Path to config file
   -h, --help           Show this help message
 ```
 
@@ -380,7 +358,6 @@ Examples:
 pre-vhs input.tape.pre output.tape   # explicit input/output paths
 pre-vhs demo                          # convenience: reads demo.tape.pre → writes demo.tape
 cat file.tape.pre | pre-vhs > out.tape
-pre-vhs --config custom.config.js input.pre output.tape
 ```
 
 ---
@@ -423,13 +400,12 @@ pre-vhs follows a **"fail fast on guardrails, lenient everywhere else"** philoso
 
 ### Strict (throws immediately)
 
-| Scenario                                        | Why                     |
-| ----------------------------------------------- | ----------------------- |
-| Macro recursion (`A → B → A`)                   | Prevents infinite loops |
-| Expansion depth exceeded (default 32)           | Guards against blowup   |
-| Expansion steps exceeded (default 10,000)       | Guards against blowup   |
-| Missing config file (when explicitly specified) | User error              |
-| Missing input file                              | User error              |
+| Scenario                                  | Why                     |
+| ----------------------------------------- | ----------------------- |
+| Macro recursion (`A → B → A`)             | Prevents infinite loops |
+| Expansion depth exceeded (default 32)     | Guards against blowup   |
+| Expansion steps exceeded (default 10,000) | Guards against blowup   |
+| Missing input file                        | User error              |
 
 ### Lenient (silent degradation)
 

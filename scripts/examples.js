@@ -3,7 +3,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const { processText } = require("../src/config");
+const { processText } = require("../src/index");
 
 const mode = process.argv[2];
 if (!mode || (mode !== "check" && mode !== "regen")) {
@@ -12,14 +12,6 @@ if (!mode || (mode !== "check" && mode !== "regen")) {
 }
 
 const repoRoot = path.resolve(__dirname, "..");
-const configPath = path.join(
-  repoRoot,
-  "test",
-  "fixtures",
-  "pre-vhs.examples.config.js",
-);
-const configDir = path.dirname(configPath);
-const config = require(configPath);
 
 function normalize(text) {
   return String(text).trimEnd();
@@ -28,8 +20,6 @@ function normalize(text) {
 function generateFromFile(inputPath) {
   const input = fs.readFileSync(inputPath, "utf8");
   return processText(input, {
-    config,
-    configDir,
     engineOptions: { warnOnMacroCollision: false },
   });
 }

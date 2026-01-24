@@ -97,6 +97,7 @@ Lines: 20. Less repetition; sleeps colocated with the commands they affect.
 Add aliases for common patterns and apply a `Gap` to reduce explicit sleeps between directive tokens.
 
 ```text
+Pack builtins
 Use TypeEnter
 WriteFile = Type $1, Enter, Type $2, Enter, Type $3, Enter, Type $4, Enter, Type $5, Enter, Type $6, Enter
 
@@ -147,6 +148,7 @@ Lines: 29, but far less manual sleep noise—`Apply Gap` inserts sleeps between 
 Compose the steps into reusable higher-level macros; `Gap` still handles directive-level pacing.
 
 ```text
+Pack builtins
 Use TypeEnter
 > Apply Gap 200ms
 
@@ -154,7 +156,7 @@ TypeEnterSleep = TypeEnter $1, Sleep $2
 InitProject = TypeEnter "mkdir api-demo", TypeEnter "cd api-demo", TypeEnter "npm init -y", Sleep 2s, TypeEnter "npm install express", Sleep 2s
 WriteApp = TypeEnter "cat <<'EOF' > index.js", TypeEnter $1, TypeEnter $2, TypeEnter $3, TypeEnter $4, TypeEnter "EOF"
 RunAndProbe = TypeEnter "node index.js", Sleep 1s, TypeEnter "curl -s http://localhost:3000/health"
-GitWrap = TypeEnter "git init -q", TypeEnter "git add .", TypeEnter "git commit -m \"init\""
+GitWrap = TypeEnter "git init -q", TypeEnter "git add .", TypeEnter `git commit -m "init"`
 
 > InitProject
 
@@ -177,6 +179,8 @@ Lines: 19, but reads at the workflow level (“InitProject”, “WriteApp”, �
 If typing realism matters, enable the typing styles pack globally and switch for the file:
 
 ```text
+Pack builtins
+Pack typingStyles
 Use TypeEnter
 > Apply Gap 200ms
 > Apply TypingStyle human
@@ -184,7 +188,7 @@ Use TypeEnter
 InitProject = TypeEnter "mkdir api-demo", TypeEnter "cd api-demo", TypeEnter "npm init -y", Sleep 2s, TypeEnter "npm install express", Sleep 2s
 WriteApp = TypeEnter "cat <<'EOF' > index.js", TypeEnter $1, TypeEnter $2, TypeEnter $3, TypeEnter $4, TypeEnter "EOF"
 RunAndProbe = TypeEnter "node index.js", Sleep 1s, TypeEnter "curl -s http://localhost:3000/health"
-GitWrap = TypeEnter "git init -q", TypeEnter "git add .", TypeEnter "git commit -m \"init\""
+GitWrap = TypeEnter "git init -q", TypeEnter "git add .", TypeEnter `git commit -m "init"`
 
 > InitProject
 

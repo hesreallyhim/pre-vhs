@@ -9,6 +9,7 @@ const { VHS_COMMANDS } = require("./constants");
 const { formatType, baseCommandName, maxArgIndex } = require("./helpers");
 const { parseFileHeader } = require("./parser");
 const { createTransformPipeline } = require("./transforms");
+const { initPacksFromSpecs } = require("./packLoader");
 
 // ---------------------------------------------------------------------------
 // Default limits
@@ -16,7 +17,6 @@ const { createTransformPipeline } = require("./transforms");
 
 const DEFAULT_MAX_EXPANSION_STEPS = 10000;
 const DEFAULT_MAX_EXPANSION_DEPTH = 32;
-
 // ---------------------------------------------------------------------------
 // Engine factory
 // ---------------------------------------------------------------------------
@@ -41,6 +41,11 @@ function createEngine(options = {}) {
     options.maxExpansionDepth || DEFAULT_MAX_EXPANSION_DEPTH;
 
   const pipeline = createTransformPipeline();
+  const engineApi = {
+    registerMacros,
+    registerTransform: pipeline.registerTransform,
+    helpers: { formatType, baseCommandName },
+  };
 
   // -------------------------------------------------------------------------
   // Macro registration
@@ -111,10 +116,13 @@ function createEngine(options = {}) {
 
   function processText(input) {
     const allLines = String(input).split(/\r?\n/);
-    const { macrosFromHeader, useNames, bodyLines, bodyStartIndex } =
+    const { macrosFromHeader, useNames, bodyLines, bodyStartIndex, packPaths } =
       parseFileHeader(allLines, headerValidation);
 
     const useSet = new Set(useNames);
+    if (packPaths.length > 0) {
+      initPacksFromSpecs(packPaths, engineApi, process.cwd());
+    }
     registerMacros(macrosFromHeader, {
       requireUse: false,
       warnVhsCollision: true,
@@ -445,12 +453,8 @@ function createEngine(options = {}) {
   // Public API
   // -------------------------------------------------------------------------
 
-  return {
-    registerMacros,
-    registerTransform: pipeline.registerTransform,
-    processText,
-    helpers: { formatType, baseCommandName },
-  };
+  engineApi.processText = processText;
+  return engineApi;
 }
 
 module.exports = { createEngine };

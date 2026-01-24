@@ -12,12 +12,10 @@
  * - helpers.js    - Core utility functions
  * - parser.js     - File header parsing
  * - engine.js     - Engine factory and processing logic
- * - config.js     - Configuration loading and pack initialization
  * - cli.js        - Command-line interface
  */
 
 const { createEngine } = require("./engine");
-const { loadConfig, initPacksFromConfig, processText } = require("./config");
 const { formatType, baseCommandName } = require("./helpers");
 const { main } = require("./cli");
 
@@ -35,9 +33,10 @@ if (require.main === module) {
 
 module.exports = {
   createEngine,
-  processText,
-  loadConfig,
-  initPacksFromConfig,
+  processText(input, options = {}) {
+    const engine = createEngine(options.engineOptions);
+    return engine.processText(input);
+  },
   formatType,
   baseCommandName,
 };

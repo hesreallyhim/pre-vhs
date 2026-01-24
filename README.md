@@ -126,14 +126,15 @@ echo "Hello"
 
 ## Packs
 
-`pre-vhs` comes pre-loaded with a number of packs that are available by default.
-Use `excludePacks` in your config if you want to disable any of them.
+`pre-vhs` ships with a handful of first-party packs, but nothing is loaded by default.
+Load a pack with `Pack` in the header, then activate its macros with `Use`.
 
 ### Convenient Builtins
 
 - `Gap` — adds an automatic `Sleep` between directive tokens after you apply a gap value.
 
 ```sh
+Pack builtins
 > Apply Gap 200ms
 > Type $1, Enter
 echo "Hello"
@@ -144,6 +145,7 @@ ls
 - `BackspaceAll` — deletes exactly the number of characters in the payload line.
 
 ```sh
+Pack builtins
 Use BackspaceAll
 
 > Type $1
@@ -157,15 +159,26 @@ echo "ok"
 Other helpers in this pack include `BackspaceAllButOne`, `ClearLine`, `TypeEnter`,
 `TypeAndEnter`, `WordGap`, and `SentenceGap`.
 
+If you get tired of writing `WordGap 200ms`, just alias it in the header:
+
+```sh
+MyWordGap = WordGap 200ms $1
+```
+
 ### Typing Styles
 
 - `Human` — naturalistic pacing with per-keystroke variation.
 
 ```sh
-> Apply TypingStyle human high fast
-> Apply Gap 200ms
-> Type $1, Enter
+Pack typingStyles
+TypeSentenceAndBreak = Type $1, Ctrl+C
+> Apply TypingStyle human low fast
+
+> TypeSentenceAndBreak $*
 Shipping a demo should feel natural.
+Each word lands with a tiny pause.
+The flow stays readable.
+Sleep 2s
 ```
 
 ![human typing demo](./docs/tapes/human-typing/human-typing-demo.gif)
@@ -173,6 +186,8 @@ Shipping a demo should feel natural.
 - `Sloppy` — deliberately inserts and corrects typos for an imperfect feel.
 
 ```sh
+Pack typingStyles
+Pack builtins
 > Apply TypingStyle sloppy high fast
 > Apply Gap 100ms
 > Type $1, Enter
@@ -186,6 +201,7 @@ Sometimes typing is messy.
 Use `Probe` to run a shell command at preprocess time and branch based on its output.
 
 ```sh
+Pack probe
 Use Probe IfProbeMatched IfProbeNotMatched
 
 > Probe /ready/ $1
@@ -198,28 +214,18 @@ service is ready
 service is NOT ready
 ```
 
-## Configuration
+## Packs & Local Modules
 
-- Configuration file
+Load first-party packs by name, or load a local pack by path. Then `Use` the
+macros you want to activate:
 
-You can use a configuration file to exclude built-in packs or set default options (or pass `--config` to point elsewhere):
-
-```js
-module.exports = {
-  excludePacks: ["probe"],
-  packs: [
-    {
-      module: "./src/packs/typingStyles.js",
-      options: { defaultStyle: "human" },
-    },
-    "./path/to/custom-pack.js",
-  ],
-};
+```sh
+Pack builtins
+Pack ./my-pack.js
+Use MyMacro
 ```
 
-- In-script configuration
-
-Or, you can activate macros per tape with `Use ...`, then set options inline:
+Then set global modifiers inline where needed:
 
 ```sh
 > Apply Gap 150ms
@@ -232,11 +238,11 @@ Or, you can activate macros per tape with `Use ...`, then set options inline:
 
 Define macros in the header, compose them in directives, and build higher-level
 commands that read like a script. For deeper customization, write a small pack
-that registers your own macros or transforms and load it via the config file.
+that registers your own macros or transforms and load it with `Pack`.
 
 ## Reference
 
-For a complete reference guide, including advanced configuration instructions, see [REFERENCE](./docs/REFERENCE.md).
+For a complete reference guide, see [REFERENCE](./docs/REFERENCE.md).
 
 ---
 
@@ -254,10 +260,12 @@ npx pre-vhs ...     # or run it with npx
 
 A `.tape.pre` file consists of:
 
-1. A header (this is where you import any pre-loaded macros or define your own).
+1. A header (this is where you load packs and define your own macros).
 
 ```sh
 # header
+Pack builtins
+Pack ./my-pack.js  # load a local pack (path resolves from where you run pre-vhs)
 Use BackspaceAll WordGap  # pre-vhs uses the "Use" syntax for imports
 TypeEnter = Type $1, Enter  # A macro is a sequence of vhs commands
 ```
