@@ -29,7 +29,9 @@ module.exports = function builtinsPack(engine) {
   ];
 
   function extractGapArg(rawCmd) {
-    const parts = String(rawCmd || "").trim().split(/\s+/);
+    const parts = String(rawCmd || "")
+      .trim()
+      .split(/\s+/);
     return parts.length > 1 ? parts[1] : "";
   }
 

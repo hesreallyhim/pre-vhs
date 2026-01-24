@@ -17,6 +17,7 @@
     "test": "vitest --run",
     "test:ci": "npm run lint && npm run test && npm run examples:check",
     "test:watch": "vitest",
+    "snapshots:regen": "vitest --run -u test/docs.typing-demo.test.js",
     "coverage": "vitest run --coverage",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

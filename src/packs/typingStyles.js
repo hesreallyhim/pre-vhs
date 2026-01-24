@@ -54,7 +54,7 @@ module.exports = function typingStylesPack(engine) {
     high: 2.5,
   };
   const HUMAN_SPEEDS = {
-    fast: 35,
+    fast: 50,
     normal: 60,
     medium: 60,
     slow: 120,
@@ -260,6 +260,10 @@ module.exports = function typingStylesPack(engine) {
     return randomDelayMs(min, max);
   }
 
+  function sloppyCorrectionDelayMs() {
+    return Math.round(sloppyDelayMs() * 2);
+  }
+
   // ---------------------------------------------------------------------------
   // Style-specific expanders
   // ---------------------------------------------------------------------------
@@ -324,7 +328,9 @@ module.exports = function typingStylesPack(engine) {
 
         if (before) out.push(`Type@${delayBefore}ms "${beforeEsc}"`);
         out.push(`Type@${delayWrong}ms "${wrongEsc}"`);
+        out.push(`Sleep ${sloppyCorrectionDelayMs()}ms`);
         out.push("Backspace 1");
+        out.push(`Sleep ${sloppyCorrectionDelayMs()}ms`);
         if (after) out.push(`Type@${delayAfter}ms "${afterEsc}"`);
       } else {
         // no mistake for this chunk
@@ -373,7 +379,11 @@ module.exports = function typingStylesPack(engine) {
             currentStyle = defaultStyle;
           } else {
             const style = String(styleToken || "default").toLowerCase();
-            if (style === "human" || style === "sloppy" || style === "default") {
+            if (
+              style === "human" ||
+              style === "sloppy" ||
+              style === "default"
+            ) {
               currentStyle = style;
               const rest = parts.slice(3);
               if (style === "human") {

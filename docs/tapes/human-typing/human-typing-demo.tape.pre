@@ -1,8 +1,6 @@
-# pre-vhs.config.js: options.human = "high"
-
 Output docs/tapes/human-typing/human-typing-demo.gif
 
-> Apply TypingStyle human medium fast
+> Apply TypingStyle human low fast
 
 > Type $1, Ctrl+C
 Shipping a demo should feel natural.
