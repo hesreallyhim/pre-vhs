@@ -8,7 +8,6 @@ const fs = require("fs");
 const path = require("path");
 
 const { createEngine } = require("./engine");
-const { loadConfig, initPacksFromConfig } = require("./config");
 
 // ---------------------------------------------------------------------------
 // Usage text
@@ -19,7 +18,6 @@ const USAGE = `Usage: pre-vhs [options] <input> <output>
        cat file | pre-vhs [options]
 
 Options:
-  -c, --config <path>  Path to config file
   -h, --help           Show this help message
 
 Examples:
@@ -36,11 +34,10 @@ Examples:
  * Parse command-line arguments.
  *
  * @param {string[]} argv - Process argv array
- * @returns {{ configPath?: string, inputPath?: string, outputPath?: string, help: boolean }}
+ * @returns {{ inputPath?: string, outputPath?: string, help: boolean }}
  */
 function parseArgs(argv) {
   const args = {
-    configPath: undefined,
     inputPath: undefined,
     outputPath: undefined,
     help: false,
@@ -56,9 +53,6 @@ function parseArgs(argv) {
     if (tok === "--help" || tok === "-h") {
       args.help = true;
       i += 1;
-    } else if (tok === "--config" || tok === "-c") {
-      args.configPath = raw[i + 1];
-      i += 2;
     } else {
       positional.push(tok);
       i += 1;
@@ -93,7 +87,7 @@ function resolvePositionalArgs(args, positional) {
 /**
  * Run the CLI with the given arguments.
  *
- * @param {{ configPath?: string, inputPath?: string, outputPath?: string, help: boolean }} args
+ * @param {{ inputPath?: string, outputPath?: string, help: boolean }} args
  */
 function run(args) {
   if (args.help) {
@@ -101,9 +95,7 @@ function run(args) {
     process.exit(0);
   }
 
-  const { config, configDir } = loadConfig(args.configPath);
   const engine = createEngine();
-  initPacksFromConfig(config, engine, configDir);
 
   if (args.inputPath && args.outputPath) {
     processFileMode(engine, args.inputPath, args.outputPath);

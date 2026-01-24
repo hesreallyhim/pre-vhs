@@ -8,7 +8,6 @@
   },
   "files": [
     "src",
-    "pre-vhs.config.js",
     "README.md",
     "docs/REFERENCE.md",
     "docs/LICENSE"

@@ -1,6 +1,10 @@
-Output docs/tapes/human-typing/human-typing-demo.gif
+Pack typingStyles
 
-> Apply TypingStyle human low fast
+Output docs/tapes/human-typing/human-typing-demo.gif
+Set Width 600
+Set Height 400
+
+> Apply TypingStyle human medium fast
 
 > Type $1, Ctrl+C
 Shipping a demo should feel natural.

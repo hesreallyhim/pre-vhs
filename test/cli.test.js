@@ -1,7 +1,7 @@
 /**
  * Tests for the CLI module (src/cli.js).
  *
- * Tests argument parsing, help flag, config path handling, and file modes.
+ * Tests argument parsing, help flag, and file modes.
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
@@ -32,37 +32,6 @@ describe("parseArgs", () => {
       expect(result.help).toBe(true);
       // input.tape.pre is treated as basename, so gets .tape.pre appended
       expect(result.inputPath).toBe("input.tape.pre.tape.pre");
-    });
-  });
-
-  describe("config flag", () => {
-    it("parses --config flag", () => {
-      const result = parseArgs([
-        "node",
-        "pre-vhs",
-        "--config",
-        "custom.config.js",
-      ]);
-      expect(result.configPath).toBe("custom.config.js");
-    });
-
-    it("parses -c flag", () => {
-      const result = parseArgs(["node", "pre-vhs", "-c", "my-config.js"]);
-      expect(result.configPath).toBe("my-config.js");
-    });
-
-    it("parses config with input/output", () => {
-      const result = parseArgs([
-        "node",
-        "pre-vhs",
-        "-c",
-        "cfg.js",
-        "in.tape.pre",
-        "out.tape",
-      ]);
-      expect(result.configPath).toBe("cfg.js");
-      expect(result.inputPath).toBe("in.tape.pre");
-      expect(result.outputPath).toBe("out.tape");
     });
   });
 
@@ -107,28 +76,11 @@ describe("parseArgs", () => {
       const result = parseArgs([
         "node",
         "pre-vhs",
-        "-c",
-        "config.js",
         "-h",
         "input.tape.pre",
         "output.tape",
       ]);
-      expect(result.configPath).toBe("config.js");
       expect(result.help).toBe(true);
-      expect(result.inputPath).toBe("input.tape.pre");
-      expect(result.outputPath).toBe("output.tape");
-    });
-
-    it("handles flags in different order", () => {
-      const result = parseArgs([
-        "node",
-        "pre-vhs",
-        "input.tape.pre",
-        "-c",
-        "cfg.js",
-        "output.tape",
-      ]);
-      expect(result.configPath).toBe("cfg.js");
       expect(result.inputPath).toBe("input.tape.pre");
       expect(result.outputPath).toBe("output.tape");
     });
@@ -138,14 +90,8 @@ describe("parseArgs", () => {
     it("handles empty argv beyond node and script", () => {
       const result = parseArgs(["node", "pre-vhs"]);
       expect(result.help).toBe(false);
-      expect(result.configPath).toBeUndefined();
       expect(result.inputPath).toBeUndefined();
       expect(result.outputPath).toBeUndefined();
-    });
-
-    it("handles config flag without value", () => {
-      const result = parseArgs(["node", "pre-vhs", "-c"]);
-      expect(result.configPath).toBeUndefined();
     });
   });
 });
@@ -158,10 +104,6 @@ describe("USAGE", () => {
   it("contains usage information", () => {
     expect(USAGE).toContain("Usage:");
     expect(USAGE).toContain("pre-vhs");
-  });
-
-  it("documents the config flag", () => {
-    expect(USAGE).toContain("-c, --config");
   });
 
   it("documents the help flag", () => {
@@ -208,7 +150,6 @@ echo hello`;
     process.chdir(tmpDir);
 
     run({
-      configPath: undefined,
       inputPath: "test.tape.pre",
       outputPath: "test.tape",
       help: false,
@@ -237,7 +178,6 @@ ls -la`;
 
     // Basename mode args
     run({
-      configPath: undefined,
       inputPath: "demo.tape.pre",
       outputPath: "demo.tape",
       help: false,
@@ -260,7 +200,6 @@ ls -la`;
 
     expect(() => {
       run({
-        configPath: undefined,
         inputPath: "nonexistent.tape.pre",
         outputPath: "output.tape",
         help: false,
@@ -283,7 +222,6 @@ ls -la`;
 
     expect(() => {
       run({
-        configPath: undefined,
         inputPath: undefined,
         outputPath: undefined,
         help: true,
@@ -312,7 +250,6 @@ ls -la`;
     process.chdir(tmpDir);
 
     run({
-      configPath: undefined,
       inputPath: undefined,
       outputPath: undefined,
       help: false,
@@ -407,80 +344,6 @@ echo test`;
     expect(fs.existsSync(outputPath)).toBe(true);
     const output = fs.readFileSync(outputPath, "utf8");
     expect(output).toContain("Type `echo test`");
-
-    mockExit.mockRestore();
-  });
-
-  it("handles config loading errors gracefully", () => {
-    const mockExit = vi.spyOn(process, "exit").mockImplementation((code) => {
-      throw new Error(`process.exit(${code})`);
-    });
-    const mockError = vi.spyOn(console, "error").mockImplementation(() => {});
-
-    process.chdir(tmpDir);
-    process.argv = [
-      "node",
-      "pre-vhs",
-      "-c",
-      "nonexistent-config.js",
-      "in.tape.pre",
-      "out.tape",
-    ];
-
-    expect(() => main()).toThrow("process.exit(1)");
-    expect(mockError).toHaveBeenCalledWith(
-      expect.stringContaining("Config not found"),
-    );
-
-    mockExit.mockRestore();
-    mockError.mockRestore();
-  });
-});
-
-// ---------------------------------------------------------------------------
-// run() with custom config tests
-// ---------------------------------------------------------------------------
-
-describe("run with config", () => {
-  let tmpDir;
-  let originalCwd;
-
-  beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "pre-vhs-config-test-"));
-    originalCwd = process.cwd();
-  });
-
-  afterEach(() => {
-    process.chdir(originalCwd);
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-  });
-
-  it("loads and uses custom config file", () => {
-    // Create a simple config that doesn't load any packs
-    const configContent = `module.exports = { packs: [] };`;
-    const configPath = path.join(tmpDir, "custom.config.js");
-    fs.writeFileSync(configPath, configContent);
-
-    const inputContent = `> Type $1
-echo configured`;
-    const inputPath = path.join(tmpDir, "config-test.tape.pre");
-    const outputPath = path.join(tmpDir, "config-test.tape");
-    fs.writeFileSync(inputPath, inputContent);
-
-    const mockExit = vi.spyOn(process, "exit").mockImplementation(() => {});
-
-    process.chdir(tmpDir);
-
-    run({
-      configPath: "custom.config.js",
-      inputPath: "config-test.tape.pre",
-      outputPath: "config-test.tape",
-      help: false,
-    });
-
-    expect(fs.existsSync(outputPath)).toBe(true);
-    const output = fs.readFileSync(outputPath, "utf8");
-    expect(output).toContain("Type `echo configured`");
 
     mockExit.mockRestore();
   });

@@ -15,7 +15,6 @@ export default defineConfig({
         "**/node_modules/**",
         "src/index.js",
         "vitest.config.{js,ts}",
-        "pre-vhs.config.{js,cjs,json}",
       ],
     },
   },

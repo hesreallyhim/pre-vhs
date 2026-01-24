@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import path from "node:path";
 import { createEngine, formatType } from "../src/index.js";
 
 describe("engine: basic behavior", () => {
@@ -23,9 +24,9 @@ Enter`;
   it("supports header aliases at top of file", () => {
     const { processText } = createEngine();
     const input = [
-      "TypeEnter = Type $1, Enter",
+      "LocalTypeEnter = Type $1, Enter",
       "",
-      "> TypeEnter $1",
+      "> LocalTypeEnter $1",
       "ls -la",
     ].join("\n");
 
@@ -48,5 +49,28 @@ Enter`;
       formatType("# note"),
       "Enter",
     ]);
+  });
+
+  it("loads local packs from header Pack statements", () => {
+    const { processText } = createEngine();
+    const fixtureAbs = path.join(
+      process.cwd(),
+      "test",
+      "fixtures",
+      "pack.fixture.js",
+    );
+    const rel = path.relative(process.cwd(), fixtureAbs);
+    const packPath = rel.startsWith(".") ? rel : `./${rel}`;
+
+    const input = [
+      `Pack ${packPath}`,
+      "Use FixtureEcho",
+      "",
+      "> FixtureEcho $1",
+      "hello",
+    ].join("\n");
+
+    const out = processText(input);
+    expect(out).toBe(formatType("fixture hello"));
   });
 });
