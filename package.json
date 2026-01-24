@@ -10,7 +10,10 @@
     "src",
     "README.md",
     "docs/REFERENCE.md",
-    "docs/LICENSE"
+    "docs/LICENSE",
+    "docs/pre-vhs-social.png",
+    "docs/tapes/human-typing/human-typing-demo.gif",
+    "docs/tapes/sloppy-typing/sloppy-typing-demo.gif"
   ],
   "scripts": {
     "test": "vitest --run",
