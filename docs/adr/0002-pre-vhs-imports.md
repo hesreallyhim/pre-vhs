@@ -21,10 +21,12 @@ transforms, which are currently global in scope.
 - Large scripts remain in a single file or are composed by macros.
 
 Pros:
+
 - Simplest behavior and mental model.
 - No new global-state issues.
 
 Cons:
+
 - Harder to modularize complex tapes.
 
 ---
@@ -32,14 +34,17 @@ Cons:
 ### Option B: Pre-vhs include that compiles subfiles to VHS and splices output
 
 Behavior:
+
 - Read an included `.tape.pre`, run pre-vhs on it, then splice the resulting
   VHS lines into the parent output.
 
 Pros:
+
 - No leakage of directives/macros/transforms between files.
 - Mirrors VHS `Source` semantics (parse, validate, filter).
 
 Cons:
+
 - Included file cannot reuse macros from the parent.
 - Global modifiers do not carry across the boundary.
 - Must filter `Output`/`Source` in the included output.
@@ -50,13 +55,16 @@ Cons:
 ### Option C: Header-only imports (macros only)
 
 Behavior:
+
 - `UseFile ./scene.pre` imports only header macros from the file.
 
 Pros:
+
 - Avoids global state leakage.
 - Enables reuse of macro definitions across files.
 
 Cons:
+
 - Does not modularize body content.
 - Header/body parsing becomes more complex.
 
@@ -65,20 +73,24 @@ Cons:
 ### Option D: Inline include with explicit scoping
 
 Behavior:
+
 - `Include` inlines the body of another `.tape.pre` file.
 - `IncludeScoped` saves/restores global modifier state.
 
 Pros:
+
 - Supports real scene modularization.
 - Explicit scoping keeps global state predictable.
 
 Cons:
+
 - Complex semantics for header/body handling.
 - Needs cycle detection and path resolution.
 
 ## Comparison: VHS `Source`
 
 VHS `Source`:
+
 - Reads and parses the source tape.
 - Rejects nested `Source`.
 - Filters `Output` to avoid overriding the parent output.

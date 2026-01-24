@@ -140,15 +140,15 @@ Only `Type` is always available for correct escaping. All other helpers are opt-
 
 **Available macros (from builtins pack):**
 
-| Macro                | Description                            |
-| -------------------- | -------------------------------------- |
-| `BackspaceAll`       | Deletes entire payload text            |
-| `BackspaceAllButOne` | Deletes payload except last char       |
-| `TypeEnter`          | Types payload + Enter                  |
-| `TypeAndEnter`       | Types each line + Enter                |
-| `WordGap`            | Types payload word-by-word + Sleep     |
-| `SentenceGap`        | Types payload sentence-by-sentence     |
-| `ClearLine`          | Removes text + newline                 |
+| Macro                | Description                        |
+| -------------------- | ---------------------------------- |
+| `BackspaceAll`       | Deletes entire payload text        |
+| `BackspaceAllButOne` | Deletes payload except last char   |
+| `TypeEnter`          | Types payload + Enter              |
+| `TypeAndEnter`       | Types each line + Enter            |
+| `WordGap`            | Types payload word-by-word + Sleep |
+| `SentenceGap`        | Types payload sentence-by-sentence |
+| `ClearLine`          | Removes text + newline             |
 
 To activate:
 

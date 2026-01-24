@@ -159,28 +159,24 @@ describe("builtins pack", () => {
         "Apply TypingStyle human",
         "Enter",
       ]),
-    ).toEqual([
-      "Type `ok`",
-      "Apply TypingStyle human",
-      "Sleep 200ms",
-      "Enter",
-    ]);
+    ).toEqual(["Type `ok`", "Apply TypingStyle human", "Sleep 200ms", "Enter"]);
 
     expect(transform(["Apply Gap None", "Type `ok`", "Enter"])).toEqual([
       "Type `ok`",
       "Enter",
     ]);
 
-    expect(macros.WordGap("isn't is-not some:thing:weird word!", "WordGap 200ms"))
-      .toEqual([
-        formatType("isn't "),
-        "Sleep 200ms",
-        formatType("is-not "),
-        "Sleep 200ms",
-        formatType("some:thing:weird "),
-        "Sleep 200ms",
-        formatType("word!"),
-      ]);
+    expect(
+      macros.WordGap("isn't is-not some:thing:weird word!", "WordGap 200ms"),
+    ).toEqual([
+      formatType("isn't "),
+      "Sleep 200ms",
+      formatType("is-not "),
+      "Sleep 200ms",
+      formatType("some:thing:weird "),
+      "Sleep 200ms",
+      formatType("word!"),
+    ]);
 
     expect(
       macros.SentenceGap(

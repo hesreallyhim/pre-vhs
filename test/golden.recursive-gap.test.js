@@ -16,11 +16,6 @@ describe("golden: recursive macro with gap pre-expand", () => {
     ].join("\n");
 
     const out = engine.processText(input).split("\n");
-    expect(out).toEqual([
-      "Type `hello`",
-      "Enter",
-      "Type `hello`",
-      "Enter",
-    ]);
+    expect(out).toEqual(["Type `hello`", "Enter", "Type `hello`", "Enter"]);
   });
 });

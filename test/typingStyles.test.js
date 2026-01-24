@@ -28,9 +28,11 @@ describe("typingStyles pack", () => {
     // deterministic random
     const randSpy = vi.spyOn(Math, "random").mockReturnValue(0.5);
 
-    const input = ["> Apply TypingStyle human", "> Type $1", "hello world"].join(
-      "\n",
-    );
+    const input = [
+      "> Apply TypingStyle human",
+      "> Type $1",
+      "hello world",
+    ].join("\n");
 
     const out = engine.processText(input).split("\n");
 
@@ -102,7 +104,7 @@ describe("typingStyles pack", () => {
     const out = engine.processText(input).split("\n");
     const delays = out.map((line) => Number(line.match(/^Type@(\d+)ms/)?.[1]));
 
-    expect(delays[0]).toBe(35);
+    expect(delays[0]).toBe(50);
     expect(delays[2]).toBe(50);
 
     randSpy.mockRestore();

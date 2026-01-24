@@ -1,149 +1,97 @@
 Output docs/tapes/sloppy-typing/sloppy-typing-demo.gif
 
 
-Sleep 100ms
-Type@28ms "Shipp"
-Sleep 100ms
-Type@49ms "d"
-Sleep 100ms
+Type@81ms "Shippi"
+Type@52ms "w"
+Sleep 178ms
 Backspace 1
-Sleep 100ms
-Type@59ms "ing"
-Sleep 100ms
-Type@25ms " "
-Sleep 100ms
-Type@46ms "a"
-Sleep 100ms
-Type@18ms " "
-Sleep 100ms
-Type@79ms "de"
-Sleep 100ms
-Type@100ms "a"
-Sleep 100ms
+Sleep 206ms
+Type@90ms "ng"
+Type@23ms " "
+Type@110ms "a"
+Type@97ms " "
+Type@108ms "demo"
+Type@36ms " "
+Type@51ms "sh"
+Type@97ms "w"
+Sleep 174ms
 Backspace 1
-Sleep 100ms
-Type@72ms "mo"
-Sleep 100ms
-Type@13ms " "
-Sleep 100ms
-Type@76ms "should"
-Sleep 100ms
-Type@71ms " "
-Sleep 100ms
-Type@61ms "fe"
-Sleep 100ms
-Type@86ms "l"
-Sleep 100ms
+Sleep 122ms
+Type@103ms "ould"
+Type@96ms " "
+Type@73ms "f"
+Type@47ms "z"
+Sleep 164ms
 Backspace 1
-Sleep 100ms
-Type@35ms "el"
-Sleep 100ms
-Type@41ms " "
-Sleep 100ms
-Type@29ms "na"
-Sleep 100ms
-Type@78ms "c"
-Sleep 100ms
+Sleep 170ms
+Type@65ms "eel"
+Type@60ms " "
+Type@107ms "na"
+Type@57ms "v"
+Sleep 34ms
 Backspace 1
-Sleep 100ms
-Type@42ms "tural."
+Sleep 20ms
+Type@57ms "tural."
 Sleep 100ms
 Ctrl+C
 
-Sleep 100ms
-Type@41ms "Ea"
-Sleep 100ms
-Type@15ms "e"
-Sleep 100ms
+Type@58ms "Ea"
+Type@50ms "y"
+Sleep 206ms
 Backspace 1
-Sleep 100ms
-Type@87ms "ch"
-Sleep 100ms
-Type@97ms " "
-Sleep 100ms
-Type@44ms "w"
-Sleep 100ms
-Type@72ms "k"
-Sleep 100ms
+Sleep 46ms
+Type@58ms "ch"
+Type@17ms " "
+Type@79ms "w"
+Type@50ms "x"
+Sleep 200ms
 Backspace 1
-Sleep 100ms
-Type@79ms "ord"
-Sleep 100ms
-Type@97ms " "
-Sleep 100ms
-Type@46ms "l"
-Sleep 100ms
-Type@99ms "e"
-Sleep 100ms
+Sleep 42ms
+Type@50ms "ord"
+Type@93ms " "
+Type@61ms "lan"
+Type@68ms "j"
+Sleep 174ms
 Backspace 1
-Sleep 100ms
-Type@55ms "ands"
-Sleep 100ms
-Type@85ms " "
-Sleep 100ms
-Type@19ms "wi"
-Sleep 100ms
-Type@27ms "b"
-Sleep 100ms
+Sleep 194ms
+Type@45ms "ds"
+Type@72ms " "
+Type@16ms "with"
+Type@19ms " "
+Type@37ms "a"
+Type@24ms " "
+Type@58ms "ti"
+Type@70ms "d"
+Sleep 58ms
 Backspace 1
-Sleep 100ms
-Type@67ms "th"
-Sleep 100ms
-Type@53ms " "
-Sleep 100ms
-Type@22ms "a"
-Sleep 100ms
-Type@12ms " "
-Sleep 100ms
-Type@20ms "t"
-Sleep 100ms
-Type@55ms "g"
-Sleep 100ms
+Sleep 66ms
+Type@17ms "ny"
+Type@42ms " "
+Type@98ms "pau"
+Type@69ms "v"
+Sleep 66ms
 Backspace 1
-Sleep 100ms
-Type@13ms "iny"
-Sleep 100ms
-Type@104ms " "
-Sleep 100ms
-Type@75ms "pa"
-Sleep 100ms
-Type@66ms "g"
-Sleep 100ms
-Backspace 1
-Sleep 100ms
-Type@19ms "use."
+Sleep 142ms
+Type@10ms "se."
 Sleep 100ms
 Ctrl+C
 
-Sleep 100ms
-Type@12ms "T"
-Sleep 100ms
-Type@44ms "z"
-Sleep 100ms
+Type@61ms "The"
+Type@20ms " "
+Type@59ms "f"
+Type@48ms "i"
+Sleep 176ms
 Backspace 1
-Sleep 100ms
-Type@33ms "he"
-Sleep 100ms
-Type@101ms " "
-Sleep 100ms
-Type@94ms "flow"
-Sleep 100ms
-Type@101ms " "
-Sleep 100ms
-Type@59ms "sta"
-Sleep 100ms
-Type@12ms "v"
-Sleep 100ms
+Sleep 206ms
+Type@53ms "low"
+Type@22ms " "
+Type@106ms "s"
+Type@81ms "v"
+Sleep 216ms
 Backspace 1
+Sleep 98ms
+Type@69ms "tays"
+Type@77ms " "
+Type@104ms "readable."
 Sleep 100ms
-Type@77ms "ys"
-Sleep 100ms
-Type@100ms " "
-Sleep 100ms
-Type@40ms "readabl"
-Sleep 100ms
-Type@66ms "r"
-Sleep 100ms
-Backspace 1
-Sleep 100ms
-Type@77ms "e."
+Sleep 2s

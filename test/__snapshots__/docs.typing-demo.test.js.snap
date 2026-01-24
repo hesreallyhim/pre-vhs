@@ -4,104 +4,104 @@ exports[`docs typing demos > matches snapshot: human-typing-demo.tape 1`] = `
 "Output docs/tapes/human-typing/human-typing-demo.gif
 
 
-Type@23ms "S"
-Type@264ms "h"
-Type@144ms "i"
-Type@135ms "p"
-Type@17ms "p"
-Type@152ms "i"
-Type@182ms "n"
-Type@157ms "g"
-Type@108ms " "
-Type@97ms "a"
-Type@112ms " "
-Type@80ms "d"
+Type@48ms "S"
+Type@220ms "h"
+Type@136ms "i"
+Type@147ms "p"
+Type@40ms "p"
+Type@131ms "i"
+Type@139ms "n"
+Type@129ms "g"
+Type@93ms " "
+Type@98ms "a"
+Type@99ms " "
+Type@79ms "d"
 Type@108ms "e"
-Type@352ms "m"
-Type@187ms "o"
+Type@287ms "m"
+Type@148ms "o"
+Type@85ms " "
+Type@88ms "s"
+Type@212ms "h"
+Type@166ms "o"
+Type@136ms "u"
+Type@153ms "l"
+Type@289ms "d"
+Type@104ms " "
+Type@96ms "f"
+Type@122ms "e"
+Type@56ms "e"
+Type@336ms "l"
 Type@96ms " "
-Type@94ms "s"
-Type@274ms "h"
-Type@177ms "o"
-Type@145ms "u"
-Type@213ms "l"
-Type@408ms "d"
-Type@97ms " "
-Type@81ms "f"
-Type@125ms "e"
-Type@15ms "e"
-Type@417ms "l"
-Type@98ms " "
-Type@89ms "n"
-Type@357ms "a"
-Type@245ms "t"
-Type@173ms "u"
-Type@212ms "r"
-Type@214ms "a"
-Type@518ms "l"
-Type@113ms "."
+Type@96ms "n"
+Type@288ms "a"
+Type@208ms "t"
+Type@147ms "u"
+Type@174ms "r"
+Type@173ms "a"
+Type@382ms "l"
+Type@99ms "."
 Ctrl+C
 
-Type@35ms "E"
-Type@142ms "a"
-Type@195ms "c"
-Type@184ms "h"
+Type@40ms "E"
+Type@129ms "a"
+Type@167ms "c"
+Type@160ms "h"
 Type@98ms " "
-Type@98ms "w"
-Type@453ms "o"
-Type@351ms "r"
-Type@90ms "d"
-Type@88ms " "
-Type@99ms "l"
-Type@525ms "a"
-Type@378ms "n"
-Type@271ms "d"
-Type@106ms "s"
-Type@110ms " "
-Type@110ms "w"
-Type@404ms "i"
-Type@200ms "t"
-Type@141ms "h"
-Type@108ms " "
-Type@91ms "a"
-Type@109ms " "
-Type@93ms "t"
-Type@225ms "i"
-Type@150ms "n"
-Type@167ms "y"
-Type@78ms " "
-Type@113ms "p"
-Type@544ms "a"
-Type@353ms "u"
-Type@309ms "s"
-Type@91ms "e"
-Type@98ms "."
-Ctrl+C
-
-Type@52ms "T"
-Type@136ms "h"
-Type@237ms "e"
-Type@75ms " "
-Type@90ms "f"
-Type@349ms "l"
-Type@121ms "o"
-Type@472ms "w"
+Type@100ms "w"
+Type@347ms "o"
+Type@253ms "r"
+Type@85ms "d"
+Type@83ms " "
+Type@85ms "l"
+Type@374ms "a"
+Type@276ms "n"
+Type@204ms "d"
+Type@79ms "s"
 Type@89ms " "
-Type@112ms "s"
-Type@212ms "t"
-Type@249ms "a"
-Type@325ms "y"
-Type@245ms "s"
-Type@103ms " "
-Type@111ms "r"
-Type@84ms "e"
-Type@131ms "a"
-Type@165ms "d"
-Type@142ms "a"
-Type@330ms "b"
-Type@249ms "l"
-Type@413ms "e"
-Type@103ms "."
+Type@97ms "w"
+Type@307ms "i"
+Type@171ms "t"
+Type@116ms "h"
+Type@104ms " "
+Type@97ms "a"
+Type@99ms " "
+Type@95ms "t"
+Type@175ms "i"
+Type@131ms "n"
+Type@151ms "y"
+Type@99ms " "
+Type@82ms "p"
+Type@405ms "a"
+Type@272ms "u"
+Type@241ms "s"
+Type@98ms "e"
+Type@99ms "."
+Ctrl+C
+
+Type@42ms "T"
+Type@129ms "h"
+Type@200ms "e"
+Type@81ms " "
+Type@100ms "f"
+Type@260ms "l"
+Type@90ms "o"
+Type@354ms "w"
+Type@88ms " "
+Type@103ms "s"
+Type@168ms "t"
+Type@216ms "a"
+Type@257ms "y"
+Type@198ms "s"
+Type@85ms " "
+Type@100ms "r"
+Type@101ms "e"
+Type@122ms "a"
+Type@138ms "d"
+Type@122ms "a"
+Type@248ms "b"
+Type@210ms "l"
+Type@334ms "e"
+Type@95ms "."
 Sleep 2s"
 `;
 
@@ -109,150 +109,98 @@ exports[`docs typing demos > matches snapshot: sloppy-typing-demo.tape 1`] = `
 "Output docs/tapes/sloppy-typing/sloppy-typing-demo.gif
 
 
-Sleep 100ms
-Type@28ms "Shipp"
-Sleep 100ms
-Type@49ms "d"
-Sleep 100ms
+Type@81ms "Shippi"
+Type@52ms "w"
+Sleep 178ms
 Backspace 1
-Sleep 100ms
-Type@59ms "ing"
-Sleep 100ms
-Type@25ms " "
-Sleep 100ms
-Type@46ms "a"
-Sleep 100ms
-Type@18ms " "
-Sleep 100ms
-Type@79ms "de"
-Sleep 100ms
-Type@100ms "a"
-Sleep 100ms
+Sleep 206ms
+Type@90ms "ng"
+Type@23ms " "
+Type@110ms "a"
+Type@97ms " "
+Type@108ms "demo"
+Type@36ms " "
+Type@51ms "sh"
+Type@97ms "w"
+Sleep 174ms
 Backspace 1
-Sleep 100ms
-Type@72ms "mo"
-Sleep 100ms
-Type@13ms " "
-Sleep 100ms
-Type@76ms "should"
-Sleep 100ms
-Type@71ms " "
-Sleep 100ms
-Type@61ms "fe"
-Sleep 100ms
-Type@86ms "l"
-Sleep 100ms
+Sleep 122ms
+Type@103ms "ould"
+Type@96ms " "
+Type@73ms "f"
+Type@47ms "z"
+Sleep 164ms
 Backspace 1
-Sleep 100ms
-Type@35ms "el"
-Sleep 100ms
-Type@41ms " "
-Sleep 100ms
-Type@29ms "na"
-Sleep 100ms
-Type@78ms "c"
-Sleep 100ms
+Sleep 170ms
+Type@65ms "eel"
+Type@60ms " "
+Type@107ms "na"
+Type@57ms "v"
+Sleep 34ms
 Backspace 1
-Sleep 100ms
-Type@42ms "tural."
+Sleep 20ms
+Type@57ms "tural."
 Sleep 100ms
 Ctrl+C
 
-Sleep 100ms
-Type@41ms "Ea"
-Sleep 100ms
-Type@15ms "e"
-Sleep 100ms
+Type@58ms "Ea"
+Type@50ms "y"
+Sleep 206ms
 Backspace 1
-Sleep 100ms
-Type@87ms "ch"
-Sleep 100ms
-Type@97ms " "
-Sleep 100ms
-Type@44ms "w"
-Sleep 100ms
-Type@72ms "k"
-Sleep 100ms
+Sleep 46ms
+Type@58ms "ch"
+Type@17ms " "
+Type@79ms "w"
+Type@50ms "x"
+Sleep 200ms
 Backspace 1
-Sleep 100ms
-Type@79ms "ord"
-Sleep 100ms
-Type@97ms " "
-Sleep 100ms
-Type@46ms "l"
-Sleep 100ms
-Type@99ms "e"
-Sleep 100ms
+Sleep 42ms
+Type@50ms "ord"
+Type@93ms " "
+Type@61ms "lan"
+Type@68ms "j"
+Sleep 174ms
 Backspace 1
-Sleep 100ms
-Type@55ms "ands"
-Sleep 100ms
-Type@85ms " "
-Sleep 100ms
-Type@19ms "wi"
-Sleep 100ms
-Type@27ms "b"
-Sleep 100ms
+Sleep 194ms
+Type@45ms "ds"
+Type@72ms " "
+Type@16ms "with"
+Type@19ms " "
+Type@37ms "a"
+Type@24ms " "
+Type@58ms "ti"
+Type@70ms "d"
+Sleep 58ms
 Backspace 1
-Sleep 100ms
-Type@67ms "th"
-Sleep 100ms
-Type@53ms " "
-Sleep 100ms
-Type@22ms "a"
-Sleep 100ms
-Type@12ms " "
-Sleep 100ms
-Type@20ms "t"
-Sleep 100ms
-Type@55ms "g"
-Sleep 100ms
+Sleep 66ms
+Type@17ms "ny"
+Type@42ms " "
+Type@98ms "pau"
+Type@69ms "v"
+Sleep 66ms
 Backspace 1
-Sleep 100ms
-Type@13ms "iny"
-Sleep 100ms
-Type@104ms " "
-Sleep 100ms
-Type@75ms "pa"
-Sleep 100ms
-Type@66ms "g"
-Sleep 100ms
-Backspace 1
-Sleep 100ms
-Type@19ms "use."
+Sleep 142ms
+Type@10ms "se."
 Sleep 100ms
 Ctrl+C
 
-Sleep 100ms
-Type@12ms "T"
-Sleep 100ms
-Type@44ms "z"
-Sleep 100ms
+Type@61ms "The"
+Type@20ms " "
+Type@59ms "f"
+Type@48ms "i"
+Sleep 176ms
 Backspace 1
-Sleep 100ms
-Type@33ms "he"
-Sleep 100ms
-Type@101ms " "
-Sleep 100ms
-Type@94ms "flow"
-Sleep 100ms
-Type@101ms " "
-Sleep 100ms
-Type@59ms "sta"
-Sleep 100ms
-Type@12ms "v"
-Sleep 100ms
+Sleep 206ms
+Type@53ms "low"
+Type@22ms " "
+Type@106ms "s"
+Type@81ms "v"
+Sleep 216ms
 Backspace 1
+Sleep 98ms
+Type@69ms "tays"
+Type@77ms " "
+Type@104ms "readable."
 Sleep 100ms
-Type@77ms "ys"
-Sleep 100ms
-Type@100ms " "
-Sleep 100ms
-Type@40ms "readabl"
-Sleep 100ms
-Type@66ms "r"
-Sleep 100ms
-Backspace 1
-Sleep 100ms
-Type@77ms "e.""
+Sleep 2s"
 `;
