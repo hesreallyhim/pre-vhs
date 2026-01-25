@@ -1,0 +1,63 @@
+Pack builtins
+Use TypeEnter TypeAndEnter
+Say = TypeEnter $1, Sleep 800ms
+Run1s = TypeEnter $1, Sleep 1s
+Run800 = TypeEnter $1, Sleep 800ms
+Run600 = TypeEnter $1, Sleep 600ms
+Run500 = TypeEnter $1, Sleep 500ms
+Run400 = TypeEnter $1, Sleep 400ms
+Run300 = TypeEnter $1, Sleep 300ms
+WriteFile400 = TypeEnter $1, TypeAndEnter $*, TypeEnter EOF, Sleep 400ms
+TouchKeep = TypeEnter cat <<'EOF' > assets/.keep, TypeEnter EOF, Sleep 400ms
+VisitDir = TypeEnter $1, Sleep 400ms, TypeEnter ls, Sleep 600ms, TypeEnter cd .., Sleep 300ms
+Intro = Say $1, Say $2
+ExploreRoot = Run1s ls, Run1s pwd, Run1s ls -a
+ScaffoldProject = Run500 mkdir project-sandbox, Run500 cd project-sandbox, Run400 mkdir src, Run400 mkdir docs, Run400 mkdir scripts, Run400 mkdir assets, VisitDir cd src, VisitDir cd docs, VisitDir cd scripts, VisitDir cd assets
+CreateBoilerplateFiles = Say echo "Now creating boilerplate files."
+SeedContent = Say echo "Adding sample content."
+TourProject = Say echo "Quick tour of the scaffold.", Run600 ls, Run600 ls -a, Run1s find . -maxdepth 2 -type f, Run800 cat README.md, Run800 cat docs/quickstart.md, Run800 cat scripts/dev.sh, Run800 cat src/main.txt, TypeEnter echo "Scaffold complete."
+
+Output refactor-walkthrough.gif
+Set FontSize 14
+> Intro $1 $2
+echo "Quick scaffold: from empty folder to tidy project."
+echo "We will create folders, boilerplate files, and take a short tour."
+> ExploreRoot
+> ScaffoldProject
+> CreateBoilerplateFiles
+> WriteFile400 $1
+cat <<'EOF' > .gitignore
+node_modules
+.DS_Store
+dist
+
+> WriteFile400 $1
+cat <<'EOF' > README.md
+# Project Sandbox
+A tiny scaffold for pre-vhs demos.
+
+> WriteFile400 $1
+cat <<'EOF' > docs/quickstart.md
+# Quickstart
+- Run scripts/dev.sh
+- Add real code in src/
+
+> WriteFile400 $1
+cat <<'EOF' > scripts/dev.sh
+#!/usr/bin/env bash
+echo "dev script placeholder"
+
+> Run400 chmod +x scripts/dev.sh
+> TouchKeep
+> SeedContent
+> WriteFile400 $1
+cat <<'EOF' > src/main.txt
+hello from src
+this is placeholder text
+
+> WriteFile400 $1
+cat <<'EOF' > docs/notes.md
+- remember to update README
+- add tests later
+
+> TourProject

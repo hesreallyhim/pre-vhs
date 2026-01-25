@@ -1,0 +1,87 @@
+Output refactor-walkthrough.gif
+Set FontSize 14
+> Type $1, Enter, Sleep 800ms, Type $2, Enter, Sleep 800ms
+echo "Quick scaffold: from empty folder to tidy project."
+echo "We will create folders, boilerplate files, and take a short tour."
+> Type $1, Enter, Sleep 1s, Type $2, Enter, Sleep 1s, Type $3, Enter, Sleep 1s
+ls
+pwd
+ls -a
+> Type $1, Enter, Sleep 500ms, Type $2, Enter, Sleep 500ms
+mkdir project-sandbox
+cd project-sandbox
+> Type $1, Enter, Sleep 400ms, Type $2, Enter, Sleep 400ms, Type $3, Enter, Sleep 400ms, Type $4, Enter, Sleep 400ms
+mkdir src
+mkdir docs
+mkdir scripts
+mkdir assets
+> Type $1, Enter, Sleep 400ms, Type $2, Enter, Sleep 600ms, Type $3, Enter, Sleep 300ms
+cd src
+ls
+cd ..
+> Type $1, Enter, Sleep 400ms, Type $2, Enter, Sleep 600ms, Type $3, Enter, Sleep 300ms
+cd docs
+ls
+cd ..
+> Type $1, Enter, Sleep 400ms, Type $2, Enter, Sleep 600ms, Type $3, Enter, Sleep 300ms
+cd scripts
+ls
+cd ..
+> Type $1, Enter, Sleep 400ms, Type $2, Enter, Sleep 600ms, Type $3, Enter, Sleep 300ms
+cd assets
+ls
+cd ..
+> Type $1, Enter, Sleep 800ms
+echo "Now creating boilerplate files."
+> Type $1, Enter, Type $2, Enter, Type $3, Enter, Type $4, Enter, Type $5, Enter, Sleep 400ms
+cat <<'EOF' > .gitignore
+node_modules
+.DS_Store
+dist
+EOF
+> Type $1, Enter, Type $2, Enter, Type $3, Enter, Type $4, Enter, Sleep 400ms
+cat <<'EOF' > README.md
+# Project Sandbox
+A tiny scaffold for pre-vhs demos.
+EOF
+> Type $1, Enter, Type $2, Enter, Type $3, Enter, Type $4, Enter, Type $5, Enter, Sleep 400ms
+cat <<'EOF' > docs/quickstart.md
+# Quickstart
+- Run scripts/dev.sh
+- Add real code in src/
+EOF
+> Type $1, Enter, Type $2, Enter, Type $3, Enter, Type $4, Enter, Sleep 400ms
+cat <<'EOF' > scripts/dev.sh
+#!/usr/bin/env bash
+echo "dev script placeholder"
+EOF
+> Type $1, Enter, Sleep 400ms
+chmod +x scripts/dev.sh
+> Type $1, Enter, Type $2, Enter, Sleep 400ms
+cat <<'EOF' > assets/.keep
+EOF
+> Type $1, Enter, Sleep 800ms
+echo "Adding sample content."
+> Type $1, Enter, Type $2, Enter, Type $3, Enter, Type $4, Enter, Sleep 400ms
+cat <<'EOF' > src/main.txt
+hello from src
+this is placeholder text
+EOF
+> Type $1, Enter, Type $2, Enter, Type $3, Enter, Type $4, Enter, Sleep 400ms
+cat <<'EOF' > docs/notes.md
+- remember to update README
+- add tests later
+EOF
+> Type $1, Enter, Sleep 800ms
+echo "Quick tour of the scaffold."
+> Type $1, Enter, Sleep 600ms, Type $2, Enter, Sleep 600ms, Type $3, Enter, Sleep 1s
+ls
+ls -a
+find . -maxdepth 2 -type f
+> Type $1, Enter, Sleep 800ms, Type $2, Enter, Sleep 800ms, Type $3, Enter, Sleep 800ms, Type $4, Enter, Sleep 800ms
+cat README.md
+cat docs/quickstart.md
+cat scripts/dev.sh
+cat src/main.txt
+> Type $1, Enter
+echo "Scaffold complete."

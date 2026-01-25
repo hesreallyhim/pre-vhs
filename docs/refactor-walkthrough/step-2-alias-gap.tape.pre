@@ -1,0 +1,93 @@
+Pack builtins
+Use TypeEnter TypeAndEnter
+Say = TypeEnter $1, Sleep 800ms
+VisitDir = TypeEnter $1, Sleep 400ms, TypeEnter $2, Sleep 600ms, TypeEnter $3, Sleep 300ms
+WriteFile = TypeEnter $1, TypeAndEnter $*, TypeEnter EOF
+
+Output refactor-walkthrough.gif
+Set FontSize 14
+> Say $1
+echo "Quick scaffold: from empty folder to tidy project."
+> Say $1
+echo "We will create folders, boilerplate files, and take a short tour."
+> TypeEnter $1, Sleep 1s
+ls
+> TypeEnter $1, Sleep 1s
+pwd
+> TypeEnter $1, Sleep 1s
+ls -a
+> TypeEnter $1, Sleep 500ms
+mkdir project-sandbox
+> TypeEnter $1, Sleep 500ms
+cd project-sandbox
+> Apply Gap 400ms
+> TypeEnter mkdir src, TypeEnter mkdir docs, TypeEnter mkdir scripts, TypeEnter mkdir assets
+> Apply Gap None
+Sleep 400ms
+> VisitDir $1 $2 $3
+cd src
+ls
+cd ..
+> VisitDir $1 $2 $3
+cd docs
+ls
+cd ..
+> VisitDir $1 $2 $3
+cd scripts
+ls
+cd ..
+> VisitDir $1 $2 $3
+cd assets
+ls
+cd ..
+> Say $1
+echo "Now creating boilerplate files."
+> WriteFile $1
+cat <<'EOF' > .gitignore
+node_modules
+.DS_Store
+dist
+
+Sleep 400ms
+> WriteFile $1
+cat <<'EOF' > README.md
+# Project Sandbox
+A tiny scaffold for pre-vhs demos.
+
+Sleep 400ms
+> WriteFile $1
+cat <<'EOF' > docs/quickstart.md
+# Quickstart
+- Run scripts/dev.sh
+- Add real code in src/
+
+Sleep 400ms
+> WriteFile $1
+cat <<'EOF' > scripts/dev.sh
+#!/usr/bin/env bash
+echo "dev script placeholder"
+
+Sleep 400ms
+> TypeEnter $1, Sleep 400ms
+chmod +x scripts/dev.sh
+> TypeEnter cat <<'EOF' > assets/.keep, TypeEnter EOF, Sleep 400ms
+> Say $1
+echo "Adding sample content."
+> WriteFile $1
+cat <<'EOF' > src/main.txt
+hello from src
+this is placeholder text
+
+Sleep 400ms
+> WriteFile $1
+cat <<'EOF' > docs/notes.md
+- remember to update README
+- add tests later
+
+Sleep 400ms
+> Say $1
+echo "Quick tour of the scaffold."
+> TypeEnter ls, Sleep 600ms, TypeEnter ls -a, Sleep 600ms, TypeEnter find . -maxdepth 2 -type f, Sleep 1s
+> TypeEnter cat README.md, Sleep 800ms, TypeEnter cat docs/quickstart.md, Sleep 800ms, TypeEnter cat scripts/dev.sh, Sleep 800ms, TypeEnter cat src/main.txt, Sleep 800ms
+> TypeEnter $1
+echo "Scaffold complete."

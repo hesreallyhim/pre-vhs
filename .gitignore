@@ -8,3 +8,4 @@ coverage/
 examples/**/demo.tape
 skills/
 !docs/*
+project-sandbox/

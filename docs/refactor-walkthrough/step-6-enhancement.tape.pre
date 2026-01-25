@@ -1,0 +1,121 @@
+Pack builtins
+Pack typingStyles
+Use TypeEnter EachLine
+
+Beat = Sleep 1s
+NarrateLine = Beat, Type echo $1, Enter, Beat
+FileLine = Beat, Type $1, Enter, Beat
+Run = Beat, TypeEnter $1, Beat
+RunLong = Beat, TypeEnter $1, Sleep 2s
+VisitDir = Beat, TypeEnter $1, Beat, TypeEnter ls, Beat, TypeEnter cd .., Beat
+WriteGitignoreStart = Beat, TypeEnter cat > .gitignore
+WriteREADMEStart = Beat, TypeEnter cat > README.md
+WriteQuickstartStart = Beat, TypeEnter cat > docs/quickstart.md
+WriteDevScriptStart = Beat, TypeEnter cat > scripts/dev.sh
+WriteMainTextStart = Beat, TypeEnter cat > src/main.txt
+WriteNotesStart = Beat, TypeEnter cat > docs/notes.md
+WriteFileEnd = Beat, Ctrl+D, Beat
+TouchKeep = Run touch assets/.keep
+ActBreak = Sleep 2s, Ctrl+L, Sleep 2s
+
+ExploreRoot = Run ls, Run pwd, Run ls -a
+ScaffoldProject = Run mkdir project-sandbox, Run cd project-sandbox, Run mkdir src, Run mkdir docs, Run mkdir scripts, Run mkdir assets, VisitDir cd src, VisitDir cd docs, VisitDir cd scripts, VisitDir cd assets
+TourProject = Run ls, Run ls -a, RunLong find . -maxdepth 2 -type f, Run cat README.md, Run cat docs/quickstart.md, Run cat scripts/dev.sh, Run cat src/main.txt, Run echo "Scaffold complete."
+
+Output refactor-walkthrough-enhanced.gif
+Set FontSize 14
+
+> Apply TypingStyle human low fast
+> EachLine NarrateLine
+Quick scaffold: from empty folder to tidy project.
+We will create folders, boilerplate files, and take a short tour.
+
+> Apply TypingStyle None
+
+> ExploreRoot
+> ActBreak
+> ScaffoldProject
+> ActBreak
+
+> Apply TypingStyle human low fast
+> EachLine NarrateLine
+Now creating boilerplate files.
+
+> Apply TypingStyle None
+
+> WriteGitignoreStart
+> Apply TypingStyle human low fast
+> EachLine FileLine
+node_modules
+.DS_Store
+dist
+
+> Apply TypingStyle None
+> WriteFileEnd
+
+> WriteREADMEStart
+> Apply TypingStyle human low fast
+> EachLine FileLine
+# Project Sandbox
+A tiny scaffold for pre-vhs demos.
+
+> Apply TypingStyle None
+> WriteFileEnd
+
+> WriteQuickstartStart
+> Apply TypingStyle human low fast
+> EachLine FileLine
+# Quickstart
+- Run scripts/dev.sh
+- Add real code in src/
+
+> Apply TypingStyle None
+> WriteFileEnd
+
+> WriteDevScriptStart
+> Apply TypingStyle human low fast
+> EachLine FileLine
+#!/usr/bin/env bash
+echo "dev script placeholder"
+
+> Apply TypingStyle None
+> WriteFileEnd
+
+> Run chmod +x scripts/dev.sh
+> TouchKeep
+> ActBreak
+
+> Apply TypingStyle human low fast
+> EachLine NarrateLine
+Adding sample content.
+
+> Apply TypingStyle None
+
+> WriteMainTextStart
+> Apply TypingStyle human low fast
+> EachLine FileLine
+hello from src
+this is placeholder text
+
+> Apply TypingStyle None
+> WriteFileEnd
+
+> WriteNotesStart
+> Apply TypingStyle human low fast
+> EachLine FileLine
+- remember to update README
+- add tests later
+
+> Apply TypingStyle None
+> WriteFileEnd
+
+> ActBreak
+
+> Apply TypingStyle human low fast
+> EachLine NarrateLine
+Quick tour of the scaffold.
+
+> Apply TypingStyle None
+
+> TourProject
+Sleep 3s

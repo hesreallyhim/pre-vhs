@@ -302,6 +302,10 @@ that registers your own macros or transforms and load it with `Pack`.
 
 For a complete reference guide, see [REFERENCE](./docs/REFERENCE.md).
 
+## Walkthrough
+
+For a guided demonstration of how you might refactor a long VHS tape file into a more condensed, readable form, see the [Refactoring Walkthrough](./docs/refactor-walkthrough/refactor-walkthrough.md).
+
 ---
 
 ## Quickstart
